@@ -35,8 +35,8 @@ No account, no server, no tracking: **audio never leaves your device.** It insta
 ## Quick start
 
 ```sh
-npm install        # also copies the piano samples and the Basic Pitch model into public/
-npm run dev        # http://localhost:5173
+npm install
+npm run dev        # http://localhost:5173 (first copies the piano samples and Basic Pitch model into public/)
 npm run build      # static site in dist/ (deploy anywhere: GitHub Pages, Netlify, Cloudflare Pages)
 npm test           # unit + quick accuracy guards (Vitest)
 npm run e2e        # Playwright end-to-end tests (fake microphone, MIDI-free paths)
@@ -108,6 +108,19 @@ src/worklets/  the real-time analysis AudioWorklet
 src/ui/        React screens, sheet (OpenSheetMusicDisplay) and falling-notes views, dev panel
 tests/         Vitest unit, follower and accuracy tests;   e2e/  Playwright
 ```
+
+## Status and known limitations
+
+- All eight milestones of the plan are implemented. The core is covered by unit tests (importers, tempo maths,
+  repeat unrolling, matcher, followers, scoring, calibration, drills, progress) and Playwright tests (fake
+  microphone, mocked Web MIDI, wait/play-along grading, lessons 1–3, offline reload).
+- **Microphone accuracy is measured on real piano recordings and a simulated laptop microphone, not yet on a real
+  CT-S1 in a real room.** See [docs/ACCURACY.md](docs/ACCURACY.md); real-instrument numbers will be added from
+  labelled takes (dev panel → Takes).
+- Automated browser tests run in Chromium. Firefox (mic + MIDI) and Safari (mic only) need a manual smoke test
+  per release.
+- Follow-me mode tracks one position at a time; very free interpretations or skipping whole sections can confuse it
+  (press Stop and start again from the bar you want).
 
 ## Licence and credits
 

@@ -23,6 +23,7 @@ interface AppState {
   audioReady: boolean;
   pianoProgress: number; // 0-1
   calibrationOpen: boolean;
+  quickCheckOpen: boolean;
   /** "Practise this" request for the practice screen (loop drill on a range). */
   pendingDrill: { start: number; end: number; tempo: number; reviewId?: string } | null;
   /** Settings the practice screen applies when it opens (lessons, drills). */
@@ -50,6 +51,7 @@ export const useApp = create<AppState>((set, get) => ({
   audioReady: false,
   pianoProgress: 0,
   calibrationOpen: false,
+  quickCheckOpen: false,
   pendingDrill: null,
   pendingImport: null,
   practicePreset: null,

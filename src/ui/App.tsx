@@ -8,6 +8,7 @@ import { ImportSummary } from './components/ImportSummary';
 import { importFiles } from './importer';
 import { CalibrationWizard } from './calibration/CalibrationWizard';
 import { DevPanel } from './dev/DevPanel';
+import { QuickCheck } from './calibration/QuickCheck';
 
 const NAV: { id: Screen; label: string; icon: string }[] = [
   { id: 'today', label: 'Today', icon: '☀' },
@@ -35,6 +36,7 @@ export function App() {
   const [screens, setScreens] = useState<Partial<Record<Screen, () => ReactNode>>>({});
   const pendingImport = useApp((s) => s.pendingImport);
   const calibrationOpen = useApp((s) => s.calibrationOpen);
+  const quickCheckOpen = useApp((s) => s.quickCheckOpen);
   const setApp = useApp((s) => s.set);
   const debug = useApp((s) => s.settings.debug) || new URLSearchParams(location.search).has('debug');
   const [dragging, setDragging] = useState(false);
@@ -140,6 +142,7 @@ export function App() {
       {pendingImport && <ImportSummary key={pendingImport.id} initial={pendingImport} existing={false} />}
       {dragging && <div className="drag-overlay">Drop to import</div>}
       {debug && <DevPanel />}
+      {quickCheckOpen && <QuickCheck onClose={() => setApp({ quickCheckOpen: false })} />}
       {calibrationOpen && <CalibrationWizard onClose={() => setApp({ calibrationOpen: false })} />}
     </div>
   );

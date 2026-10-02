@@ -160,6 +160,15 @@ class Runtime {
     this.register(mic);
     mic.onStatus((st) => this.micStatus.emit(st));
     mic.frames.on((f) => this.onMicFrame(f));
+    // Room got much noisier than at calibration: suggest the 10-second quick check (once).
+    let warned = false;
+    mic.stats.on((st) => {
+      const cal = this.calibration.noiseFloorDb;
+      if (!warned && cal !== undefined && st.floorDb > cal + 12) {
+        warned = true;
+        useApp.getState().toast('It sounds a lot noisier than when you calibrated.', 'warn', { label: 'Quick check', run: () => useApp.getState().set({ quickCheckOpen: true }) });
+      }
+    });
     await mic.start();
     this.micStatus.emit(mic.status);
     if (mic.status === 'running') {

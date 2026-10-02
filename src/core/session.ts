@@ -196,7 +196,7 @@ export class PracticeSession {
       beatAt: (t) => tl.beatAt(t),
       secPerBeat: (b) => tm.secPerBeatAt(b),
       confidenceThreshold: this.config.source === 'mic' ? this.config.confidenceThreshold : 0,
-      judgeRelease: this.config.source !== 'mic',
+      judgeRelease: true,
       measures: this.score.measures,
     });
   }

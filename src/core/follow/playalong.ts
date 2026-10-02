@@ -95,6 +95,8 @@ export class PlayAlongFollower implements Follower {
       return [];
     }
     if (e.kind === 'noteOff') {
+      // Mic: piano notes decay naturally, so only an abrupt stop (damper) says the key was released.
+      if (e.source === 'mic' && !e.abrupt) return [];
       for (let i = this.played.length - 1; i >= 0; i--) {
         const p = this.played[i];
         if (p.midi === e.midi && p.releaseTime === undefined) {

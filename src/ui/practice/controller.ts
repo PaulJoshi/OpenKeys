@@ -191,6 +191,8 @@ class PracticeController {
         if (e.kind === 'noteOff' && e.source !== 'mic') liveKeys.release(e.midi);
         if (scoreInformed && e.source === 'mic') {
           this.detector?.onMonoEvent(e);
+          // Damper releases are the only reliable mic note-offs (for "released too early").
+          if (e.kind === 'noteOff' && e.abrupt) session.handleNote(e);
           return;
         }
         session.handleNote(e);
