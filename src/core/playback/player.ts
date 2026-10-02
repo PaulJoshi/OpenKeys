@@ -225,8 +225,8 @@ export class Player {
         this.iteration++;
         const f = this.onLoopFactor?.(this.iteration);
         if (f && f !== this.tempo.factor) this.tempo = this.tempo.withFactor(f);
-        this.loopWrap.emit({ iteration: this.iteration, time: wrapTime });
         this.beginSegment(wrapTime, this.config.loop.startBeat, this.config.loop.endBeat);
+        this.loopWrap.emit({ iteration: this.iteration, time: wrapTime });
         continue;
       }
       if (this.endTime === Infinity) {
