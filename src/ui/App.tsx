@@ -4,6 +4,8 @@ import { runtime } from './runtime';
 import { registerPwa } from './pwa';
 import { FreePlay } from './screens/FreePlay';
 import { Toasts } from './components/Toasts';
+import { ImportSummary } from './components/ImportSummary';
+import { importFiles } from './importer';
 
 const NAV: { id: Screen; label: string; icon: string }[] = [
   { id: 'today', label: 'Today', icon: '☀' },
@@ -29,6 +31,8 @@ export function App() {
   const theme = useApp((s) => s.settings.theme);
   const loadSettings = useApp((s) => s.loadSettings);
   const [screens, setScreens] = useState<Partial<Record<Screen, () => ReactNode>>>({});
+  const pendingImport = useApp((s) => s.pendingImport);
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     void loadSettings();
@@ -46,7 +50,9 @@ export function App() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (isTyping(e) || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.shiftKey && !e.repeat) return; // Shift+letter = practice shortcuts
+      if (e.shiftKey) return; // Shift+letter = practice shortcuts
+      // Computer keys play notes only when the virtual input is selected (clicks always work).
+      if (useApp.getState().settings.inputSource !== 'virtual') return;
       if (runtime.virtual.keyDown(e.code, e.timeStamp, e.repeat)) {
         e.preventDefault();
         void runtime.ensureAudio();
@@ -63,6 +69,41 @@ export function App() {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
       window.removeEventListener('pointerdown', gesture);
+    };
+  }, []);
+
+  // Drag-and-drop import anywhere.
+  useEffect(() => {
+    let depth = 0;
+    const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes('Files');
+    const enter = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      depth++;
+      setDragging(true);
+    };
+    const leave = () => {
+      depth = Math.max(0, depth - 1);
+      if (!depth) setDragging(false);
+    };
+    const over = (e: DragEvent) => {
+      if (hasFiles(e)) e.preventDefault();
+    };
+    const drop = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth = 0;
+      setDragging(false);
+      if (e.dataTransfer?.files.length) void importFiles(e.dataTransfer.files);
+    };
+    window.addEventListener('dragenter', enter);
+    window.addEventListener('dragleave', leave);
+    window.addEventListener('dragover', over);
+    window.addEventListener('drop', drop);
+    return () => {
+      window.removeEventListener('dragenter', enter);
+      window.removeEventListener('dragleave', leave);
+      window.removeEventListener('dragover', over);
+      window.removeEventListener('drop', drop);
     };
   }, []);
 
@@ -88,6 +129,8 @@ export function App() {
         {render ? render() : <div className="page muted">Loading…</div>}
       </main>
       <Toasts />
+      {pendingImport && <ImportSummary key={pendingImport.id} initial={pendingImport} existing={false} />}
+      {dragging && <div className="drag-overlay">Drop to import</div>}
     </div>
   );
 }

@@ -643,7 +643,7 @@ input[type='range'] {
   min-height: 120px;
 }
 
-.sheet-wrap.dark-invert svg {
+.sheet-wrap.dark-invert .osmd-host svg {
   filter: invert(0.92) hue-rotate(180deg);
 }
 
@@ -926,4 +926,9 @@ kbd {
   border-radius: 10px;
   display: block;
   margin: 0 auto;
+}
+
+.abc-paper .abc-playing,
+.abc-paper .abc-playing path {
+  fill: #2f6fde;
 }

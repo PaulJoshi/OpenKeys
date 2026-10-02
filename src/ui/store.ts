@@ -23,6 +23,10 @@ interface AppState {
   audioReady: boolean;
   pianoProgress: number; // 0-1
   calibrationOpen: boolean;
+  /** "Practise this" request for the practice screen (loop drill on a range). */
+  pendingDrill: { start: number; end: number; tempo: number; reviewId?: string } | null;
+  /** Score waiting for the import summary dialog. */
+  pendingImport: Score | null;
   go: (s: Screen) => void;
   setScore: (s: Score | null, lessonId?: string | null) => void;
   updateSettings: (patch: Partial<Settings>) => void;
@@ -44,6 +48,8 @@ export const useApp = create<AppState>((set, get) => ({
   audioReady: false,
   pianoProgress: 0,
   calibrationOpen: false,
+  pendingDrill: null,
+  pendingImport: null,
   go: (screen) => set({ screen }),
   setScore: (score, lessonId = null) => set({ score, lessonId }),
   updateSettings: (patch) => {
