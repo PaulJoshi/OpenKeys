@@ -34,7 +34,8 @@ export function summarizeTake(score: Score, results: NoteResult[], extras: Extra
 
   let dynamicsScore: number | null = null;
   let dynReport = null;
-  if (meta.timingJudged && scoreHasDynamics(score)) {
+  // Computer keys have no touch sensitivity, so dynamics are only judged for MIDI and mic.
+  if (meta.timingJudged && meta.source !== 'virtual' && scoreHasDynamics(score)) {
     dynReport = judgeDynamics(score.notes, results, score.hairpins);
     for (const r of results) {
       const d = dynReport.perNote.get(r.noteId);

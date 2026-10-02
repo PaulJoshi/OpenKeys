@@ -33,6 +33,8 @@ const proxyClock: AudioClock = {
  */
 class Runtime {
   readonly bus = new InputBus();
+  /** Every event from every running input, before source selection (take recording). */
+  readonly allEvents = new Emitter<NoteEvent>();
   readonly clock = proxyClock;
   readonly virtual = new VirtualInput(proxyClock);
   private plugins = new Map<InputSource, InputPlugin>();
@@ -63,7 +65,12 @@ class Runtime {
     this.plugins.set(p.source, p);
     this.unsubs.set(
       p.source,
-      p.onEvent((e) => this.bus.push(e)),
+      p.onEvent((e) => {
+        this.allEvents.emit(e);
+        // Only the selected input (plus the always-available virtual keys/clicks) is judged;
+        // other running inputs are recorded (e.g. MIDI as ground truth for mic takes).
+        if (e.source === 'virtual' || e.source === getSettings().inputSource) this.bus.push(e);
+      }),
     );
   }
 

@@ -7,8 +7,9 @@ export function scoreHasDynamics(score: Pick<Score, 'notes' | 'hairpins'>): bool
   if (score.hairpins?.length) return true;
   const marked = score.notes.filter((n) => n.dynamic).length;
   if (marked > 0) {
-    const kinds = new Set(score.notes.map((n) => n.dynamic ?? ''));
-    return kinds.size > 1 || marked === score.notes.length;
+    // A single marking throughout (e.g. just "mf") gives nothing to shape.
+    const kinds = new Set(score.notes.filter((n) => n.dynamic).map((n) => n.dynamic));
+    return kinds.size > 1;
   }
   const vels = score.notes.map((n) => n.velocity).filter((v): v is number => v !== undefined);
   if (vels.length < score.notes.length * 0.8) return false;
