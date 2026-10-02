@@ -40,7 +40,7 @@ export function InputSettings() {
         <div className="seg">
           {(['mic', 'midi', 'virtual'] as InputSource[]).map((src) => (
             <button key={src} aria-pressed={s.inputSource === src} onClick={() => update({ inputSource: src })}>
-              {src === 'mic' ? '🎤 Microphone' : src === 'midi' ? '🎹 MIDI keyboard' : '⌨ Computer keys'}
+              {src === 'mic' ? 'Microphone' : src === 'midi' ? 'MIDI keyboard' : 'Computer keys'}
             </button>
           ))}
         </div>

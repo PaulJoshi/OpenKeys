@@ -5,6 +5,7 @@ import { exportMusicXml } from '../../core/score/export-musicxml';
 import { diatonicStep, midiToName } from '../../core/music';
 import { mapMomentsToSteps, momentAt, type OsmdStep, type StepMapping } from './sheetmap';
 import { practiceLive, verdictHex } from './live';
+import { OK } from '../design/palette';
 
 interface Props {
   score: Score;
@@ -66,7 +67,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
           drawFingerings: showFingering,
           drawMeasureNumbers: true,
           followCursor: false,
-          cursorsOptions: [{ type: 0, color: dark ? '#6b9cff' : '#2f6fde', alpha: 0.35, follow: false }],
+          cursorsOptions: [{ type: 0, color: OK.blue, alpha: 0.3, follow: false }],
         });
         osmdRef.current = osmd;
         await osmd.load(score.musicxml ?? exportMusicXml(score));
@@ -242,7 +243,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
         const x = r.left - hostRect.left + r.width / 2;
         const y = r.top - hostRect.top;
         const icon = v === 'perfect' || v === 'good' || v === 'ok' ? '' : v === 'early' ? '←' : v === 'late' ? '→' : v === 'missed' ? '○' : v === 'uncertain' ? '?' : '';
-        if (icon) parts.push(`<text x="${x}" y="${y - 4}" text-anchor="middle" font-size="13" font-weight="700" fill="${verdictHex(v, dark)}">${icon}</text>`);
+        if (icon) parts.push(`<text x="${x}" y="${y - 4}" text-anchor="middle" font-size="13" font-weight="500" fill="${verdictHex(v, dark)}">${icon}</text>`);
       }
     }
     // Ghost noteheads for wrong pitches.
@@ -259,7 +260,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
       const y = r.top - hostRect.top + r.height / 2 - steps * (r.height / 2);
       const col = verdictHex('wrong', dark);
       parts.push(`<ellipse cx="${x}" cy="${y}" rx="${r.width / 2}" ry="${r.height / 2.3}" fill="none" stroke="${col}" stroke-width="2" opacity="0.85" transform="rotate(-20 ${x} ${y})"/>`);
-      parts.push(`<text x="${x + r.width}" y="${y + 4}" font-size="11" font-weight="700" fill="${col}">✕ ${midiToName(w.midi, flats, false)}</text>`);
+      parts.push(`<text x="${x + r.width}" y="${y + 4}" font-size="11" font-weight="500" fill="${col}">${midiToName(w.midi, flats, false)}</text>`);
     }
     // Beginner note names under noteheads.
     if (noteNameOpacity > 0.02) {
@@ -274,7 +275,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
         const x = r.left - hostRect.left + r.width / 2;
         const y = r.bottom - hostRect.top + 11;
         parts.push(
-          `<text x="${x}" y="${y}" text-anchor="middle" font-size="10" font-weight="700" fill="${dark ? '#9fb6ff' : '#2f4fa8'}" opacity="${noteNameOpacity}">${midiToName(n.midi, flats, false)}</text>`,
+          `<text x="${x}" y="${y}" text-anchor="middle" font-size="10" font-weight="500" fill="${dark ? OK.stone : OK.blue}" opacity="${noteNameOpacity}">${midiToName(n.midi, flats, false)}</text>`,
         );
       }
     }
@@ -297,7 +298,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
         const y = oy + (a.AbsolutePosition.y + a.BorderTop - 1) * unit;
         const w = (a.BorderRight - a.BorderLeft) * unit;
         const h = (b.AbsolutePosition.y + b.BorderBottom - a.AbsolutePosition.y - a.BorderTop + 2) * unit;
-        parts.unshift(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${dark ? '#6b9cff' : '#2f6fde'}" opacity="0.10" rx="4"/>`);
+        parts.unshift(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${OK.blue}" opacity="0.08"/>`);
       }
     }
     overlay.setAttribute('width', String(host.scrollWidth));

@@ -1,4 +1,5 @@
 import type { TimingVerdict } from '../../core/judge/types';
+import { OK } from '../design/palette';
 
 export interface WrongMark {
   midi: number;
@@ -76,13 +77,13 @@ export function verdictHex(v: TimingVerdict, dark: boolean): string {
     case 'perfect':
     case 'good':
     case 'ok':
-      return dark ? '#3ccf91' : '#128a55';
+      return dark ? OK.greenBright : OK.green;
     case 'early':
     case 'late':
-      return dark ? '#f0b04a' : '#c27800';
+      return dark ? OK.hairline : OK.charcoal;
     case 'uncertain':
-      return '#8a90a0';
+      return OK.stone;
     default:
-      return dark ? '#ff6b74' : '#c62f3a';
+      return OK.red;
   }
 }

@@ -1,0 +1,28 @@
+:root{
+--font-display:"Bebas Neue","Anton","Oswald","Arial Narrow",sans-serif;
+--font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+
+--weight-regular:400;
+--weight-medium:500;
+
+/* display-campaign — editorial hero lockups ONLY */
+--type-display-size:96px;--type-display-lh:0.9;
+--type-display-size-tablet:64px;--type-display-size-mobile:48px;
+/* headings */
+--type-heading-xl-size:32px;--type-heading-xl-lh:1.2;
+--type-heading-lg-size:24px;--type-heading-lg-lh:1.2;
+--type-heading-md-size:16px;--type-heading-md-lh:1.75;
+/* body */
+--type-body-size:16px;--type-body-lh:1.5;
+/* buttons */
+--type-button-lg-size:24px;--type-button-lg-lh:1.2;
+--type-button-md-size:16px;--type-button-md-lh:1.5;
+--type-button-sm-size:14px;--type-button-sm-lh:1.5;
+/* link */
+--type-link-size:16px;--type-link-lh:1.75;
+/* captions */
+--type-caption-md-size:14px;--type-caption-md-lh:1.5;
+--type-caption-sm-size:12px;--type-caption-sm-lh:1.5;
+/* utility / legal */
+--type-utility-size:9px;--type-utility-lh:1.75;
+}

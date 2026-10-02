@@ -7,6 +7,7 @@ import type { ReviewRecord } from '../../core/progress/db';
 import { kvGet } from '../../core/progress/db';
 import { loadScore } from '../../core/progress/library';
 import { progressOverview } from '../../core/progress/stats';
+import { Icon } from '../components/Icon';
 
 export function Today() {
   const s = useApp((x) => x.settings);
@@ -54,8 +55,8 @@ export function Today() {
     <div className="page">
       <h1>Today</h1>
       {!s.onboarded && (
-        <section className="card" style={{ marginBottom: 20, borderColor: 'var(--accent)', borderWidth: 2 }}>
-          <h2>Welcome to OpenKeys 👋</h2>
+        <section style={{ marginBottom: 'var(--space-section)' }}>
+          <h2 className="display">Learn piano. For free.</h2>
           <p>OpenKeys listens while you play and tells you what went well and what to fix. Everything runs on this device; nothing is uploaded.</p>
           <p>
             <b>First, how will you play?</b> With a keyboard nearby, the microphone works right away. A USB cable (MIDI) is the most accurate. No instrument? Use the computer keys.
@@ -68,7 +69,7 @@ export function Today() {
                 set({ calibrationOpen: true });
               }}
             >
-              🎤 Microphone
+              <Icon name="mic" /> Microphone
             </button>
             <button
               className="btn big"
@@ -77,7 +78,7 @@ export function Today() {
                 set({ calibrationOpen: true });
               }}
             >
-              🎹 USB / MIDI
+              <Icon name="piano" /> USB / MIDI
             </button>
             <button
               className="btn big"
@@ -86,7 +87,7 @@ export function Today() {
                 go('course');
               }}
             >
-              ⌨ No instrument
+              <Icon name="keyboard" /> No instrument
             </button>
           </div>
         </section>
@@ -100,16 +101,16 @@ export function Today() {
           <div className="progress" style={{ margin: '10px 0' }} aria-label="Daily goal progress">
             <div style={{ width: `${goalPct * 100}%`, background: goalPct >= 1 ? 'var(--good)' : undefined }} />
           </div>
-          <div className="muted">{streak > 0 ? `🔥 ${streak}-day streak` : 'Start a streak today'}</div>
+          <div className="muted">{streak > 0 ? `${streak}-day streak` : 'Start a streak today'}</div>
         </section>
         {lesson && (
           <section className="card">
             <h3>Next lesson</h3>
-            <div style={{ fontWeight: 700, fontSize: '1.15rem' }}>
+            <div style={{ fontWeight: 500, fontSize: 'var(--type-heading-lg-size)', lineHeight: 'var(--type-heading-lg-lh)' }}>
               {lesson.number}. {lesson.title}
             </div>
             <div className="muted small" style={{ marginBottom: 10 }}>
-              {lesson.summary} {nextStars > 0 && `· ${'★'.repeat(nextStars)} so far`}
+              {lesson.summary} {nextStars > 0 && `· ${nextStars} of 3 stars so far`}
             </div>
             <button className="btn primary" onClick={() => go('course')}>
               Continue the course
@@ -119,7 +120,7 @@ export function Today() {
         {last && (
           <section className="card">
             <h3>Continue</h3>
-            <div style={{ fontWeight: 700 }}>{last.title}</div>
+            <div style={{ fontWeight: 500 }}>{last.title}</div>
             <button
               className="btn"
               style={{ marginTop: 10 }}

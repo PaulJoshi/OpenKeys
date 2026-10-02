@@ -8,6 +8,7 @@ import { midiToName } from '../../core/music';
 import type { NoteEvent } from '../../core/types';
 import { DeviceStep } from './DeviceStep';
 import { InstrumentProfileStep } from './InstrumentProfileStep';
+import { Icon } from '../components/Icon';
 
 type StepId = 'device' | 'noise' | 'latency' | 'tuning' | 'range' | 'dynamics' | 'profile' | 'done';
 
@@ -43,7 +44,7 @@ export function CalibrationWizard({ onClose, only }: { onClose: () => void; only
             {only ? 'Calibration' : `Step ${idx + 1} of ${steps.length}`} · {source === 'mic' ? 'Microphone' : source === 'midi' ? 'MIDI keyboard' : 'Computer keys'}
           </span>
           <button className="btn ghost small" onClick={onClose} aria-label="Close calibration">
-            ✕
+            <Icon name="x" />
           </button>
         </div>
         {!only && (

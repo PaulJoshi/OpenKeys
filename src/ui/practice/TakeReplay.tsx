@@ -7,6 +7,7 @@ import { practice } from './controller';
 import { verdictHex } from './live';
 import { useDark } from '../hooks';
 import { TempoMap } from '../../core/score/tempo';
+import { Icon } from '../components/Icon';
 
 /** Take replay: the learner's take next to the reference, with a piano-roll overlay. */
 export function TakeReplay({ score, result, onClose }: { score: Score; result: TakeResult; onClose: () => void }) {
@@ -53,20 +54,20 @@ export function TakeReplay({ score, result, onClose }: { score: Score; result: T
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <h2 style={{ margin: 0 }}>Your take vs. the score</h2>
           <button className="btn ghost" onClick={onClose} aria-label="Close replay">
-            ✕
+            <Icon name="x" />
           </button>
         </div>
         <p className="small muted">Outlines are the written notes (coloured by verdict); filled bars are what you played.</p>
         <PianoRoll expected={expected} played={mine} height={300} cursor={() => (playing && runtime.engine ? runtime.engine.now() - startT.current : null)} />
         <div className="row" style={{ marginTop: 12 }}>
           <button className="btn primary" onClick={() => void play('mine')}>
-            ▶ My take
+            <Icon name="play" size={16} /> My take
           </button>
           <button className="btn" onClick={() => void play('ref')}>
-            ▶ Reference
+            <Icon name="play" size={16} /> Reference
           </button>
           <button className="btn" onClick={() => void play('both')}>
-            ▶ Both together
+            <Icon name="play" size={16} /> Both together
           </button>
           <button
             className="btn ghost"
@@ -75,7 +76,7 @@ export function TakeReplay({ score, result, onClose }: { score: Score; result: T
               setPlaying(false);
             }}
           >
-            ■ Stop
+            <Icon name="square" size={16} /> Stop
           </button>
         </div>
       </div>

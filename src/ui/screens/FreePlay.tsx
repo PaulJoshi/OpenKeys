@@ -9,6 +9,7 @@ import { midiToName } from '../../core/music';
 import { liveKeys } from '../live';
 import { notesToMidiFile, notesToScore, type TimedNote } from '../../core/score/fromNotes';
 import type { TranscribedNote } from '../../core/input/mic/transcribe';
+import { Icon } from '../components/Icon';
 
 const MODEL_URL = `${import.meta.env.BASE_URL}models/basic-pitch/model.json`;
 
@@ -150,11 +151,11 @@ export function FreePlay() {
           </div>
           {!recording ? (
             <button className="btn primary" onClick={() => void startRec()}>
-              ● Record
+              <Icon name="circle" size={16} /> Record
             </button>
           ) : (
             <button className="btn" onClick={() => void stopRec()}>
-              ■ Stop
+              <Icon name="square" size={16} /> Stop
             </button>
           )}
         </div>
@@ -175,7 +176,7 @@ export function FreePlay() {
       />
       <div className="card" style={{ marginTop: 16 }}>
         <h3>Recent notes</h3>
-        <div style={{ fontSize: '1.4rem', fontWeight: 700, minHeight: '2em' }} data-testid="recent-notes">
+        <div style={{ fontSize: 'var(--type-heading-lg-size)', fontWeight: 500, minHeight: '2em' }} data-testid="recent-notes">
           {recent.join(' ')}
         </div>
       </div>
@@ -185,7 +186,7 @@ export function FreePlay() {
           <PianoRoll played={best ?? []} height={200} />
           <div className="row">
             <button className="btn" onClick={() => best && void playBack(best)} disabled={!best?.length}>
-              ▶ Play it back
+              <Icon name="play" size={16} /> Play it back
             </button>
             {take.audio && (
               <button className="btn" onClick={() => void runTranscription()} disabled={transcribing !== null}>

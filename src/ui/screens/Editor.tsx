@@ -6,6 +6,7 @@ import { hashId } from '../../core/score/ids';
 import { useApp } from '../store';
 import { runtime } from '../runtime';
 import { kvGet, kvSet } from '../../core/progress/db';
+import { Icon } from '../components/Icon';
 
 const TEMPLATES: Record<string, string> = {
   'C major scale (hands separately)': `X:1
@@ -172,7 +173,7 @@ export function Editor() {
             ))}
           </select>
           <button className="btn" onClick={() => void play()} disabled={!parsed.score}>
-            {playing ? '■ Stop' : '▶ Play it'}
+            {playing ? <><Icon name="square" size={16} /> Stop</> : <><Icon name="play" size={16} /> Play it</>}
           </button>
           <button className="btn" onClick={() => void save()} disabled={!parsed.score}>
             Save to library

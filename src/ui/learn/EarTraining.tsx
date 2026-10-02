@@ -4,6 +4,7 @@ import { compareEar, earPhrase, type EarPhrase } from '../../core/learn/drills';
 import { midiToName } from '../../core/music';
 import { InputStatus } from '../components/InputStatus';
 import { useApp } from '../store';
+import { Icon } from '../components/Icon';
 
 /** The app plays a short phrase or interval; the learner plays it back. */
 export function EarTraining() {
@@ -68,7 +69,7 @@ export function EarTraining() {
           {phrase ? 'Next' : 'Start'}
         </button>
         <button className="btn" onClick={() => void play()} disabled={!phrase}>
-          ▶ Hear it again
+          <Icon name="play" size={16} /> Hear it again
         </button>
         <span className="muted small">
           {tally.right}/{tally.total} right
@@ -79,10 +80,10 @@ export function EarTraining() {
       {phrase && (
         <div className="card">
           <div className="muted small">{level <= 2 ? 'Play the two notes you heard, starting on the first one.' : 'Play the phrase back.'} The first note is {midiToName(phrase.notes[0])}.</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, margin: '8px 0' }}>
+          <div style={{ fontSize: 'var(--type-heading-lg-size)', fontWeight: 500, margin: '8px 0' }}>
             {phrase.notes.map((_, i) => (
               <span key={i} style={{ marginRight: 14, color: result ? (result.correct[i] ? 'var(--good)' : 'var(--bad)') : undefined }}>
-                {played[i] !== undefined ? `${result ? (result.correct[i] ? '✓' : '✕') : ''}${midiToName(played[i])}` : '·'}
+                {played[i] !== undefined ? midiToName(played[i]) : '·'}
               </span>
             ))}
           </div>

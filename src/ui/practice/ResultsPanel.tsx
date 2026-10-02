@@ -1,6 +1,7 @@
 import type { TakeResult } from '../../core/judge/types';
 import type { Score } from '../../core/types';
 import { VERDICT_STYLE } from './live';
+import { Icon, Stars } from '../components/Icon';
 
 interface Props {
   score: Score;
@@ -12,13 +13,13 @@ interface Props {
   onReplay?: () => void;
 }
 
-export function heatColor(acc: number): string {
-  // red -> amber -> green
-  if (acc >= 0.95) return '#3ccf91';
-  if (acc >= 0.85) return '#9ad66b';
-  if (acc >= 0.7) return '#f0c04a';
-  if (acc >= 0.5) return '#f0904a';
-  return '#ff6b74';
+/** Bar accuracy as design-system feedback colours: green = solid, red = needs work, greys between. */
+export function heatColor(acc: number): { background: string; color: string } {
+  if (acc >= 0.95) return { background: 'var(--ok-green)', color: 'var(--ok-white)' };
+  if (acc >= 0.85) return { background: 'var(--ok-green-bright)', color: 'var(--ok-white)' };
+  if (acc >= 0.7) return { background: 'var(--ok-hairline)', color: 'var(--ok-ink)' };
+  if (acc >= 0.5) return { background: 'var(--ok-accent-pink-soft)', color: 'var(--ok-ink)' };
+  return { background: 'var(--ok-red)', color: 'var(--ok-white)' };
 }
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -33,14 +34,11 @@ export function ResultsPanel({ score, result, micMode, onClose, onRetry, onPract
     <div className="card results" role="dialog" aria-label="Take results">
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <div>
-          <div className="stars" aria-label={`${result.stars} of 3 stars`}>
-            {'★'.repeat(result.stars)}
-            <span style={{ opacity: 0.25 }}>{'★'.repeat(3 - result.stars)}</span>
-          </div>
+          <Stars earned={result.stars} size={24} />
           <h2 style={{ margin: 0 }}>{headline}</h2>
         </div>
         <button className="btn ghost" onClick={onClose} aria-label="Close results">
-          ✕
+          <Icon name="x" />
         </button>
       </div>
       <div className="row" style={{ gap: 28, margin: '16px 0' }}>
@@ -83,7 +81,7 @@ export function ResultsPanel({ score, result, micMode, onClose, onRetry, onPract
             <button
               key={m.index}
               className="cell"
-              style={{ background: acc === undefined ? 'var(--bg-3)' : heatColor(acc), color: acc === undefined ? 'var(--fg-3)' : '#111' }}
+              style={acc === undefined ? { background: 'var(--bg-3)', color: 'var(--fg-3)' } : heatColor(acc)}
               title={acc === undefined ? `Bar ${measureNo(m.index)}: not played` : `Bar ${measureNo(m.index)}: ${pct(acc)}`}
               onClick={() => onPractise(m.index, m.index, Math.min(result.tempoFactor, 0.8))}
             >

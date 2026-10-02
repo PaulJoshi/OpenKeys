@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { isBlackKey, midiToName } from '../../core/music';
 import { useDark } from '../hooks';
+import { canvasColors } from '../design/palette';
 
 export interface RollNote {
   midi: number;
@@ -23,7 +24,8 @@ export function PianoRoll({ expected = [], played = [], cursor, height = 220, fo
     const canvas = ref.current!;
     const ctx = canvas.getContext('2d')!;
     let raf = 0;
-    const col = { bg: dark ? '#10151f' : '#fbfaf7', lane: dark ? '#171e2b' : '#efece5', grid: dark ? '#2a3445' : '#ddd8cc', text: dark ? '#9aa3b5' : '#6f7788', R: dark ? '#6b9cff' : '#2f6fde', L: dark ? '#f0a050' : '#d9822b', head: dark ? '#eef1f6' : '#141922' };
+    const c = canvasColors(dark);
+    const col = { ...c, grid: c.line };
     const draw = () => {
       raf = requestAnimationFrame(draw);
       const dpr = window.devicePixelRatio || 1;
@@ -54,7 +56,7 @@ export function PianoRoll({ expected = [], played = [], cursor, height = 220, fo
         }
         if (m % 12 === 0) {
           ctx.fillStyle = col.text;
-          ctx.font = '10px system-ui, sans-serif';
+          ctx.font = '500 10px Inter, system-ui, sans-serif';
           ctx.fillText(midiToName(m), 2, y(m) + rowH - 1);
           ctx.fillStyle = col.grid;
           ctx.fillRect(left, y(m) + rowH, w - left, 1);
@@ -83,5 +85,5 @@ export function PianoRoll({ expected = [], played = [], cursor, height = 220, fo
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
   }, [expected, played, cursor, dark, follow, windowSec]);
-  return <canvas ref={ref} style={{ width: '100%', height, display: 'block', borderRadius: 8, border: '1px solid var(--line)' }} role="img" aria-label="Piano roll" />;
+  return <canvas ref={ref} style={{ width: '100%', height, display: 'block', border: '1px solid var(--line)' }} role="img" aria-label="Piano roll" />;
 }

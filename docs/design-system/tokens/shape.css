@@ -1,0 +1,24 @@
+:root{
+/* Radii */
+--radius-none:0px;
+--radius-sm:18px;
+--radius-md:24px;
+--radius-lg:30px;
+--radius-full:9999px;
+--radius-card:var(--radius-none);
+--radius-button:var(--radius-lg);
+--radius-input:var(--radius-md);
+
+/* Elevation — there are no drop shadows. */
+--elevation-0:none;
+--elevation-hairline:1px solid var(--ok-hairline);
+--elevation-inset:inset 0 -1px 0 var(--ok-hairline-soft);
+--focus-halo:0 0 0 12px var(--ok-soft-cloud);
+
+/* Motion — minimal; the signature "tap collapse" is the only flourish */
+--ease-standard:cubic-bezier(0.4,0,0.2,1); /* @kind other */
+--duration-fast:120ms; /* @kind other */
+--duration-base:200ms; /* @kind other */
+--press-scale:0.5; /* @kind other */
+--press-opacity:0.5; /* @kind other */
+}

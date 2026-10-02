@@ -1,0 +1,130 @@
+/* Copied from docs/design-system/tokens — keep in sync. Source of truth: docs/design-system. */
+/* Webfonts — self-hosted Google Fonts (SIL OFL). Latin subset. */
+@font-face{font-family:"Bebas Neue";font-style:normal;font-weight:400 500;font-display:swap;src:url("./fonts/BebasNeue-Regular.woff2") format("woff2")}
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url("./fonts/Inter-Latin.woff2") format("woff2")}
+:root{
+/* Base — neutrals */
+--ok-ink:#111111;
+--ok-white:#ffffff;
+--ok-soft-cloud:#f5f5f5;
+--ok-charcoal:#39393b;
+--ok-ash:#4b4b4d;
+--ok-mute:#707072;
+--ok-stone:#9e9ea0;
+--ok-hairline:#cacacb;
+--ok-hairline-soft:#e5e5e5;
+/* Base — semantic */
+--ok-red:#d30005;
+--ok-red-deep:#780700;
+--ok-green:#007d48;
+--ok-green-bright:#1eaa52;
+--ok-blue:#1151ff;
+--ok-blue-deep:#0034e3;
+/* Base — category accents (chips, swatch dots, editorial tiles only) */
+--ok-accent-pink:#ed1aa0;
+--ok-accent-pink-soft:#ffb0dd;
+--ok-accent-purple-soft:#beaffd;
+--ok-accent-purple-pale:#d6d1ff;
+--ok-accent-teal:#0a7281;
+--ok-accent-pink-deep:#4c012d;
+
+/* Semantic aliases */
+--color-primary:var(--ok-ink);
+--color-on-primary:var(--ok-white);
+--surface-canvas:var(--ok-white);
+--surface-soft:var(--ok-soft-cloud);
+--surface-inverse:var(--ok-ink);
+--text-primary:var(--ok-ink);
+--text-body:var(--ok-ink);
+--text-soft:var(--ok-charcoal);
+--text-secondary:var(--ok-mute);
+--text-tertiary:var(--ok-stone);
+--text-disabled:var(--ok-ash);
+--text-inverse:var(--ok-white);
+--text-inverse-secondary:var(--ok-stone);
+--border-hairline:var(--ok-hairline);
+--border-hairline-soft:var(--ok-hairline-soft);
+--border-strong:var(--ok-ink);
+/* Feedback — in OpenKeys: "error" = wrong note / missed, "success" = correct note / completed */
+--feedback-error:var(--ok-red);
+--feedback-error-pressed:var(--ok-red-deep);
+--feedback-success:var(--ok-green);
+--feedback-success-inverse:var(--ok-green-bright);
+--feedback-info:var(--ok-blue);
+--feedback-info-pressed:var(--ok-blue-deep);
+}
+:root{
+--font-display:"Bebas Neue","Anton","Oswald","Arial Narrow",sans-serif;
+--font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+
+--weight-regular:400;
+--weight-medium:500;
+
+/* display-campaign — editorial hero lockups ONLY */
+--type-display-size:96px;--type-display-lh:0.9;
+--type-display-size-tablet:64px;--type-display-size-mobile:48px;
+/* headings */
+--type-heading-xl-size:32px;--type-heading-xl-lh:1.2;
+--type-heading-lg-size:24px;--type-heading-lg-lh:1.2;
+--type-heading-md-size:16px;--type-heading-md-lh:1.75;
+/* body */
+--type-body-size:16px;--type-body-lh:1.5;
+/* buttons */
+--type-button-lg-size:24px;--type-button-lg-lh:1.2;
+--type-button-md-size:16px;--type-button-md-lh:1.5;
+--type-button-sm-size:14px;--type-button-sm-lh:1.5;
+/* link */
+--type-link-size:16px;--type-link-lh:1.75;
+/* captions */
+--type-caption-md-size:14px;--type-caption-md-lh:1.5;
+--type-caption-sm-size:12px;--type-caption-sm-lh:1.5;
+/* utility / legal */
+--type-utility-size:9px;--type-utility-lh:1.75;
+}
+:root{
+--space-xxs:2px;
+--space-xs:4px;
+--space-sm:8px;
+--space-md:12px;
+--space-lg:18px;
+--space-xl:24px;
+--space-xxl:30px;
+--space-section:48px;
+--space-section-tablet:32px;
+--space-section-mobile:24px;
+
+--container-max:1440px;
+--gutter-desktop:48px;
+--gutter-ultrawide:80px;
+--sidebar-filter:220px;
+--nav-utility-h:36px;
+--nav-primary-h:56px;
+--control-h:48px;
+--control-h-sm:40px;
+--icon-button:40px;
+--swatch-dot:12px;
+}
+:root{
+/* Radii */
+--radius-none:0px;
+--radius-sm:18px;
+--radius-md:24px;
+--radius-lg:30px;
+--radius-full:9999px;
+--radius-card:var(--radius-none);
+--radius-button:var(--radius-lg);
+--radius-input:var(--radius-md);
+
+/* Elevation — there are no drop shadows. */
+--elevation-0:none;
+--elevation-hairline:1px solid var(--ok-hairline);
+--elevation-inset:inset 0 -1px 0 var(--ok-hairline-soft);
+--focus-halo:0 0 0 12px var(--ok-soft-cloud);
+
+/* Motion — minimal; the signature "tap collapse" is the only flourish */
+--ease-standard:cubic-bezier(0.4,0,0.2,1); /* @kind other */
+--duration-fast:120ms; /* @kind other */
+--duration-base:200ms; /* @kind other */
+--press-scale:0.5; /* @kind other */
+--press-opacity:0.5; /* @kind other */
+}

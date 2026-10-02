@@ -1,4 +1,5 @@
 import { useApp } from '../store';
+import { Icon } from './Icon';
 
 export function Toasts() {
   const toasts = useApp((s) => s.toasts);
@@ -19,7 +20,7 @@ export function Toasts() {
             </button>
           )}
           <button aria-label="Dismiss" onClick={() => dismiss(t.id)}>
-            ✕
+            <Icon name="x" />
           </button>
         </div>
       ))}

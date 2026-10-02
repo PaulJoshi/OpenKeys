@@ -4,6 +4,7 @@ import { useApp } from '../store';
 import { BarChart, TrendChart } from '../charts/Charts';
 import { exportBackup } from '../../core/progress/progress';
 import { downloadText } from '../importer';
+import { Stars } from '../components/Icon';
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
@@ -70,7 +71,9 @@ export function ProgressScreen() {
                   <td>{pct(s.tempoFactor)}</td>
                   <td>{pct(s.accuracy)}</td>
                   <td>{s.mode === 'wait' ? '–' : pct(s.timing)}</td>
-                  <td>{'★'.repeat(s.stars)}</td>
+                  <td>
+                    <Stars earned={s.stars} size={16} />
+                  </td>
                 </tr>
               ))}
             </tbody>

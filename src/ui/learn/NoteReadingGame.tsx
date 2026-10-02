@@ -85,8 +85,8 @@ export function NoteReadingGame() {
           </div>
           <div className="muted small">right · streak {score.streak}</div>
           {score.lastMs > 0 && <div className="small">last: {(score.lastMs / 1000).toFixed(2)} s</div>}
-          {mark === 'bad' && note !== null && <div className="small" style={{ color: 'var(--bad)' }}>✕ Not that one. Try again.</div>}
-          {mark === 'good' && note !== null && <div className="small" style={{ color: 'var(--good)' }}>✓ {midiToName(note, false)}</div>}
+          {mark === 'bad' && note !== null && <div className="small" style={{ color: 'var(--bad)' }}>Not that one. Try again.</div>}
+          {mark === 'good' && note !== null && <div className="small" style={{ color: 'var(--good)' }}>Correct: {midiToName(note, false)}</div>}
         </div>
       </div>
       {slowest.length > 0 && (

@@ -8,6 +8,7 @@ import type { InputSource } from '../../core/types';
 import type { MicPreset } from '../../core/settings';
 import { Result } from './CalibrationWizard';
 import { midiToName } from '../../core/music';
+import { Icon } from '../components/Icon';
 
 const PRESETS: { id: MicPreset; label: string; hint: string }[] = [
   { id: 'line', label: 'Line-in cable (most accurate)', hint: "Connect the keyboard's headphone/line out to an audio interface or line input. No room noise, no speaker colouring." },
@@ -57,13 +58,13 @@ export function DeviceStep({ onNext }: { onNext: () => void }) {
     <div className="col">
       <div className="seg" role="radiogroup" aria-label="Input">
         <button aria-pressed={s.inputSource === 'mic'} onClick={() => choose('mic')}>
-          🎤 Microphone
+          <Icon name="mic" size={16} /> Microphone
         </button>
         <button aria-pressed={s.inputSource === 'midi'} onClick={() => choose('midi')}>
-          🎹 MIDI / USB cable
+          <Icon name="piano" size={16} /> MIDI / USB cable
         </button>
         <button aria-pressed={s.inputSource === 'virtual'} onClick={() => choose('virtual')}>
-          ⌨ No instrument
+          <Icon name="keyboard" size={16} /> No instrument
         </button>
       </div>
 
@@ -171,7 +172,7 @@ export function DeviceStep({ onNext }: { onNext: () => void }) {
 
       {(s.inputSource === 'virtual' || micStatus === 'running' || midiStatus === 'running') && (
         <div className="notice">
-          <b>Play any key.</b> {heard ? `✓ Heard ${heard}. It works!` : 'Waiting for a note…'}
+          <b>Play any key.</b> {heard ? <span style={{ color: 'var(--good)' }}>Heard {heard}. It works.</span> : 'Waiting for a note…'}
         </div>
       )}
       <div className="row">

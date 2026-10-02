@@ -6,6 +6,7 @@ import { analyzeOffline } from '../../core/input/mic/offline';
 import { evaluate, type TranscriptionMetrics } from '../../core/input/mic/evaluate';
 import { useApp } from '../store';
 import { downloadText } from '../importer';
+import { Icon } from '../components/Icon';
 
 /** Record takes (mic audio + MIDI ground truth), list them, evaluate the detector on them. */
 export function TakesTab() {
@@ -46,7 +47,7 @@ export function TakesTab() {
       <div className="row">
         {!recording ? (
           <button className="btn primary small" onClick={() => takeRecorder.start()} disabled={!runtime.mic && !runtime.midi}>
-            ● {bothConnected ? 'Record labelled take' : 'Record take'}
+            <Icon name="circle" size={14} /> {bothConnected ? 'Record labelled take' : 'Record take'}
           </button>
         ) : (
           <button
@@ -56,7 +57,7 @@ export function TakesTab() {
               refresh();
             }}
           >
-            ■ Stop and save
+            <Icon name="square" size={14} /> Stop and save
           </button>
         )}
       </div>
@@ -99,7 +100,7 @@ export function TakesTab() {
                       refresh();
                     }}
                   >
-                    ✕
+                    <Icon name="x" size={14} />
                   </button>
                 </td>
               </tr>

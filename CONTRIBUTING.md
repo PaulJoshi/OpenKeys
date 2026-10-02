@@ -33,6 +33,8 @@ not by feel; the most important number is the **false-wrong rate**.
 - Real-time audio analysis runs in the AudioWorklet (`src/worklets`). Never use `ScriptProcessorNode`.
 - New dependencies must be open source with a licence compatible with MIT; add them to `CREDITS.md`.
 - Record design decisions in `docs/DECISIONS.md`.
+- All UI follows the OpenKeys Design System in `docs/design-system/` (summary in `CLAUDE.md`): use the
+  tokens in `src/ui/design/`, the `Icon` component, and no raw colours, shadows, emoji or bold weights.
 
 ## Adding a built-in song
 

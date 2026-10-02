@@ -6,6 +6,7 @@ import { assignHandsBySplit } from '../../core/score/hands';
 import { midiToName } from '../../core/music';
 import { saveImportedScore } from '../../core/progress/library';
 import { useApp } from '../store';
+import { Icon } from './Icon';
 
 /**
  * Shown after import (and from "Edit" in the library): title, length, tempo, key, hands, range
@@ -122,7 +123,7 @@ export function ImportSummary({ initial, existing = false }: { initial: Score; e
               <span>–</span>
               <input type="number" style={{ width: 70 }} min={1} max={sum.measures} value={s.endMeasure + 1} onChange={(e) => setSections(sections.map((x, j) => (j === i ? { ...x, endMeasure: Number(e.target.value) - 1 } : x)))} aria-label="To bar" />
               <button className="btn ghost small" onClick={() => setSections(sections.filter((_, j) => j !== i))} aria-label="Remove section">
-                ✕
+                <Icon name="x" size={16} />
               </button>
             </div>
           ))}
@@ -152,7 +153,7 @@ function Info({ k, v }: { k: string; v: string }) {
   return (
     <div>
       <div className="muted small">{k}</div>
-      <div style={{ fontWeight: 700 }}>{v}</div>
+      <div style={{ fontWeight: 500 }}>{v}</div>
     </div>
   );
 }
