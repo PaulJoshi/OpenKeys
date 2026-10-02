@@ -20,6 +20,9 @@ export interface TakeOptions {
   loop: boolean;
   /** Review item being drilled (graded on finish). */
   reviewId?: string | null;
+  anyPitch?: boolean;
+  /** Called with the result before it is saved (drills adapt their level). */
+  onResult?: (r: TakeResult) => void;
 }
 
 /**
@@ -98,6 +101,7 @@ class PracticeController {
       countInBars: opts.mode === 'wait' || opts.mode === 'followme' ? 0 : s.countInBars,
       chordWindow: s.chordWindowMs / 1000,
       confidenceThreshold: s.detector.confidenceThreshold,
+      anyPitch: opts.anyPitch,
     };
     engine.metronome.visualOnly = s.metronomeVisualOnly;
     engine.player.setScore(score);
@@ -230,6 +234,7 @@ class PracticeController {
   private async finish(result: TakeResult | null) {
     const session = this.session;
     this.cleanup();
+    if (result) this.opts?.onResult?.(result);
     if (result && session && this.score && session.mode !== 'listen') {
       const { lessonId } = useApp.getState();
       try {

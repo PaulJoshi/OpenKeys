@@ -32,6 +32,8 @@ export interface SessionConfig {
   countInBars: number;
   chordWindow: number;
   confidenceThreshold: number;
+  /** Rhythm drills: any key counts; only timing is judged. */
+  anyPitch?: boolean;
 }
 
 export interface SessionStats {
@@ -207,6 +209,7 @@ export class PracticeSession {
 
   handleNote(e: NoteEvent): void {
     if (this.state === 'idle' || this.state === 'finished') return;
+    if (this.config.anyPitch && e.kind !== 'pedal' && this.score.notes.length) e = { ...e, midi: this.score.notes[0].midi };
     const f = this.routeByTime(e.time);
     if (!f) return;
     this.dispatch(f.onNote(e));

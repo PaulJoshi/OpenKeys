@@ -17,6 +17,7 @@ import { practiceLive } from './live';
 import { feedbackText } from './feedbackCopy';
 import { measureMastery, pieceMastery } from '../../core/progress/progress';
 import { QuickCheck } from '../calibration/QuickCheck';
+import { kvSet } from '../../core/progress/db';
 
 const MODES: { id: PracticeMode; label: string; hint: string }[] = [
   { id: 'listen', label: 'Listen', hint: 'Hear the piece; the cursor follows.' },
@@ -72,6 +73,7 @@ function Practice({ score }: { score: Score }) {
   const pulseRef = useRef<HTMLDivElement>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
   const [quickCheck, setQuickCheck] = useState(false);
+  const [anyPitch, setAnyPitch] = useState(false);
 
   const running = state !== 'idle' && state !== 'finished';
   const micMode = settings.inputSource === 'mic';
@@ -82,6 +84,17 @@ function Practice({ score }: { score: Score }) {
   useEffect(() => {
     practice.setScore(score);
     return () => practice.setScore(null);
+  }, [score]);
+
+  // Presets from lessons and drills.
+  useEffect(() => {
+    const p = useApp.getState().practicePreset;
+    if (!p) return;
+    useApp.getState().set({ practicePreset: null });
+    if (p.mode) setMode(p.mode);
+    if (p.hands) setHands(p.hands);
+    if (p.tempo) setTempo(p.tempo);
+    setAnyPitch(!!p.anyPitch);
   }, [score]);
 
   // Pending "practise this" requests from Today / Library (review items).
@@ -156,12 +169,21 @@ function Practice({ score }: { score: Score }) {
       const rg = over?.range !== undefined ? over.range : range;
       const startM = rg?.startMeasure ?? measureAtBeat(score, practice.idle);
       const effRange = rg ?? (startM > 0 ? { startMeasure: startM, endMeasure: score.measures.length - 1 } : null);
-      void practice.start({ mode: m, hands, tempoFactor: over?.tempo ?? tempo, range: effRange, loop: over?.loop ?? (loopOn && !!rg), reviewId });
+      void practice.start({ mode: m, hands, tempoFactor: over?.tempo ?? tempo, range: effRange, loop: over?.loop ?? (loopOn && !!rg), reviewId, anyPitch, onResult: (r) => onResultRef.current?.(r) });
     },
-    [mode, range, score, hands, tempo, loopOn, reviewId],
+    [mode, range, score, hands, tempo, loopOn, reviewId, anyPitch],
   );
 
   const stop = useCallback(() => practice.stop(), []);
+  // Adaptive drills: sight-reading level follows the result.
+  const onResultRef = useRef<((r: TakeResult) => void) | null>(null);
+  onResultRef.current = (r) => {
+    if (score.tags?.includes('sight-reading')) {
+      const lvl = Number(/level (\d+)/.exec(score.title)?.[1] ?? 1);
+      const next = r.accuracy >= 0.9 && r.timing >= 0.6 ? lvl + 1 : r.accuracy < 0.6 ? lvl - 1 : lvl;
+      void kvSet('sightLevel', Math.max(1, Math.min(10, next)));
+    }
+  };
 
   const toggle = useCallback(() => (practice.running ? stop() : start()), [start, stop]);
 
@@ -343,6 +365,7 @@ function Practice({ score }: { score: Score }) {
           </button>
         </div>
         <InputStatus />
+        {anyPitch && <div className="notice info small" style={{ marginBottom: 6 }}>Rhythm drill: any key counts; only your timing is judged.</div>}
         {twoHandsInMic && <div className="notice info small" style={{ marginBottom: 6 }}>Chord detection is approximate in mic mode; unclear notes are marked “?” and never count against you.</div>}
         {micMode && !settings.micAllowSpeakerPlayback && mode !== 'listen' && hands !== 'both' && settings.accompaniment && (
           <div className="notice small" style={{ marginBottom: 6 }}>

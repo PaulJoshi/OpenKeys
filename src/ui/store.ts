@@ -25,6 +25,8 @@ interface AppState {
   calibrationOpen: boolean;
   /** "Practise this" request for the practice screen (loop drill on a range). */
   pendingDrill: { start: number; end: number; tempo: number; reviewId?: string } | null;
+  /** Settings the practice screen applies when it opens (lessons, drills). */
+  practicePreset: { mode?: import('../core/types').PracticeMode; hands?: import('../core/types').HandSelection; tempo?: number; anyPitch?: boolean; autoStart?: boolean } | null;
   /** Score waiting for the import summary dialog. */
   pendingImport: Score | null;
   go: (s: Screen) => void;
@@ -50,6 +52,7 @@ export const useApp = create<AppState>((set, get) => ({
   calibrationOpen: false,
   pendingDrill: null,
   pendingImport: null,
+  practicePreset: null,
   go: (screen) => set({ screen }),
   setScore: (score, lessonId = null) => set({ score, lessonId }),
   updateSettings: (patch) => {

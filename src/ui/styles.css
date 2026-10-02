@@ -714,9 +714,13 @@ input[type='range'] {
 }
 
 .feedback-line {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   min-height: 1.6em;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .results {
