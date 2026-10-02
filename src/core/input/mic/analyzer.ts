@@ -20,6 +20,8 @@ export interface AnalyzerConfig {
   spectrumEvery: number;
   /** Minimum level above the noise floor for an onset to count (dB). */
   onsetMinSnrDb: number;
+  /** Weak onsets down to this fraction of the adaptive threshold are reported. */
+  onsetWeakRatio: number;
   /** Weight of the level-rise term in the onset function (per dB above 1.5 dB). Helps bass notes. */
   riseWeight: number;
   /** Noise floor measured in calibration (dB), caps the running estimate; null if not calibrated. */
@@ -40,6 +42,7 @@ export function defaultAnalyzerConfig(sampleRate: number): AnalyzerConfig {
     onsetMinGap: 0.03,
     spectrumEvery: 2,
     onsetMinSnrDb: 10,
+    onsetWeakRatio: 0.4,
     riseWeight: 0.04,
     calibratedFloorDb: null,
   };
@@ -89,6 +92,7 @@ export class MicAnalyzer {
     this.flux = new SpectralFlux(ODF_SIZE, cfg.sampleRate);
     const gapFrames = Math.max(1, Math.round((cfg.onsetMinGap * cfg.sampleRate) / cfg.hop));
     this.picker = new PeakPicker(cfg.onsetMedianFrames, cfg.onsetMultiplier, cfg.onsetDelta, gapFrames);
+    this.picker.weakRatio = cfg.onsetWeakRatio;
     this.yin = new Yin(cfg.pitchFrame, cfg.sampleRate, cfg.yinThreshold);
     this.mpm = new Mpm(cfg.pitchFrame, cfg.sampleRate, cfg.mpmK);
     this.spec = cfg.spectrumEvery > 0 ? new MultiResSpectrum(cfg.sampleRate) : null;
@@ -104,6 +108,7 @@ export class MicAnalyzer {
     if (p.onsetDelta !== undefined) this.picker.delta = p.onsetDelta;
     if (p.onsetMedianFrames !== undefined) this.picker.medianFrames = p.onsetMedianFrames;
     if (p.onsetMinGap !== undefined) this.picker.minGapFrames = Math.max(1, Math.round((p.onsetMinGap * this.cfg.sampleRate) / this.cfg.hop));
+    if (p.onsetWeakRatio !== undefined) this.picker.weakRatio = p.onsetWeakRatio;
     if (p.yinThreshold !== undefined) this.yin.threshold = p.yinThreshold;
     if (p.mpmK !== undefined) this.mpm.k = p.mpmK;
     if (p.pitchFrame !== undefined && p.pitchFrame !== this.yin.frameSize) {

@@ -14,8 +14,10 @@ export interface DetectorParams {
   onsetMedianFrames: number;
   /** Minimum gap between onsets (s). */
   onsetMinGap: number;
-  /** Minimum level above the noise floor (dB) for a note to count. */
-  minSnrDb: number;
+  /** Noise gate: minimum level above the noise floor (dB) for an onset to count. Raise to ignore room noise. */
+  onsetMinSnrDb: number;
+  /** Onsets weaker than the adaptive threshold still count down to this fraction of it (1 = only full-strength onsets). */
+  onsetWeakRatio: number;
   /** Pitch-track median filter length in frames (3-5). */
   medianFrames: number;
   /** Hysteresis in cents before switching to a neighbouring note. */
@@ -45,7 +47,8 @@ export const DEFAULT_DETECTOR_PARAMS: DetectorParams = {
   onsetMultiplier: 2.0,
   onsetMedianFrames: 24,
   onsetMinGap: 0.03,
-  minSnrDb: 12,
+  onsetMinSnrDb: 10,
+  onsetWeakRatio: 0.4,
   medianFrames: 3,
   hysteresisCents: 12,
   partials: 10,
