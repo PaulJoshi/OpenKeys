@@ -37,14 +37,15 @@ No account, no server, no tracking: **audio never leaves your device.** It insta
 ```sh
 npm install
 npm run dev        # http://localhost:5173 (first copies the piano samples and Basic Pitch model into public/)
-npm run build      # static site in dist/ (deploy anywhere: GitHub Pages, Netlify, Cloudflare Pages)
+npm run build      # static site in dist/ (deployed on Vercel; any static host works)
 npm test           # unit + quick accuracy guards (Vitest)
 npm run e2e        # Playwright end-to-end tests (fake microphone, MIDI-free paths)
 npm run accuracy   # full detector accuracy suite; rewrites docs/ACCURACY.md (needs ffmpeg)
 ```
 
 Microphone and Web MIDI need a **secure context**: `https://` or `http://localhost`.
-For a GitHub Pages project site build with `BASE=/<repo-name>/ npm run build` (the included workflow does this).
+Production deploys run on Vercel from `main` (settings in `vercel.json`); pull requests get preview deployments.
+To serve from a sub-path instead of the domain root, build with `BASE=/<path>/ npm run build`.
 
 ## Browser support
 

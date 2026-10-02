@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// `base` can be overridden for GitHub Pages project sites: BASE=/OpenKeys/ npm run build
+// `base` can be overridden to serve from a sub-path: BASE=/OpenKeys/ npm run build
 const base = process.env.BASE ?? '/';
 
 export default defineConfig({
