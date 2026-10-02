@@ -7,6 +7,15 @@ import type { InputSource, NoteEvent } from '../core/types';
 import { midiToName } from '../core/music';
 import { liveKeys, meter } from './live';
 import { useApp, getSettings } from './store';
+import { MicInput } from '../core/input/mic/mic';
+import type { AnalysisFrame } from '../core/input/mic/frames';
+import type { CalibrationData } from '../core/calibration/types';
+import { profileKey } from '../core/calibration/types';
+import { loadCalibration } from '../core/calibration/store';
+import { midiToName as nameOf } from '../core/music';
+import { Emitter } from '../core/emitter';
+import { MidiInput, MidiOutSink, webMidiSupported } from '../core/input/midi/midi';
+import { velocityCurve } from '../core/calibration/compute';
 
 export const SAMPLE_BASE = `${import.meta.env.BASE_URL}samples/piano/`;
 
@@ -30,6 +39,13 @@ class Runtime {
   private unsubs = new Map<InputSource, () => void>();
   /** Set by the practice session to intercept judged feedback for key colours. */
   judgeHighlights = false;
+  mic: MicInput | null = null;
+  midi: MidiInput | null = null;
+  readonly midiStatus = new Emitter<string>();
+  calibration: CalibrationData = {};
+  readonly micStatus = new Emitter<string>();
+  readonly calibrationChanged = new Emitter<CalibrationData>();
+  private meterThrottle = 0;
 
   constructor() {
     this.register(this.virtual);
@@ -70,6 +86,147 @@ class Runtime {
     return e;
   }
 
+  /** Profile key for the current input device (calibration is stored per profile). */
+  get profile(): string {
+    const s = getSettings();
+    if (s.inputSource === 'mic') return profileKey('mic', this.mic?.warnings?.label || s.micDeviceId || null);
+    if (s.inputSource === 'midi') return profileKey('midi', s.midiInputName);
+    return profileKey('virtual', null);
+  }
+
+  async reloadCalibration(): Promise<void> {
+    this.calibration = await loadCalibration(this.profile);
+    this.applyCalibration();
+    this.calibrationChanged.emit(this.calibration);
+  }
+
+  /** Pushes calibration + settings into the mic tracker/analyzer. */
+  applyCalibration(): void {
+    const s = getSettings();
+    const c = this.calibration;
+    const eng = getEngine();
+    if (this.midi) {
+      this.midi.curve = velocityCurve(c.dynamics);
+      this.midi.latency = c.latencySec ?? 0;
+      this.midi.channel = s.midiChannel;
+    }
+    this.applyMidiOut();
+    if (this.mic) {
+      const defaultLatency = eng ? eng.outputLatency + 0.012 : 0.03;
+      this.mic.setTracker({
+        a4: 440 * Math.pow(2, (c.tuningCents ?? 0) / 1200),
+        octaveOffset: s.octaveOffset + (c.octaveOffset ?? 0),
+        latency: c.latencySec ?? defaultLatency,
+        medianFrames: s.detector.medianFrames,
+        hysteresisCents: s.detector.hysteresisCents,
+        pitchWaitMax: s.detector.pitchWaitMax,
+        range: s.range,
+        dynamics: c.dynamics ? { softSnrDb: c.dynamics.soft, loudSnrDb: c.dynamics.loud } : { softSnrDb: 18, loudSnrDb: 45 },
+        clickNear: (t) => getEngine()?.log.clickNear(t) ?? false,
+        appSounding: (t) => getEngine()?.log.soundingAt(t) ?? [],
+      });
+      this.mic.tune({
+        yinThreshold: s.detector.yinThreshold,
+        pitchAlgorithm: s.detector.pitchAlgorithm,
+        mpmK: s.detector.mpmK,
+        onsetDelta: s.detector.onsetDelta,
+        onsetMultiplier: s.detector.onsetMultiplier,
+        onsetMedianFrames: s.detector.onsetMedianFrames,
+        onsetMinGap: s.detector.onsetMinGap,
+        calibratedFloorDb: c.noiseFloorDb ?? null,
+        pitchFrame: s.range.low < 31 ? 4096 : 2048,
+      });
+    }
+  }
+
+  /** Starts the microphone (after the permission explanation, from a user gesture). */
+  async startMic(): Promise<MicInput | null> {
+    const eng = await this.ensureAudio();
+    const s = getSettings();
+    this.mic?.stop();
+    const mic = new MicInput(eng.ctx, {
+      deviceId: s.micDeviceId,
+      analyzer: { spectrumEvery: 2, pitchFrame: s.range.low < 31 ? 4096 : 2048 },
+      tracker: {},
+    });
+    this.mic = mic;
+    this.register(mic);
+    mic.onStatus((st) => this.micStatus.emit(st));
+    mic.frames.on((f) => this.onMicFrame(f));
+    await mic.start();
+    this.micStatus.emit(mic.status);
+    if (mic.status === 'running') await this.reloadCalibration();
+    return mic;
+  }
+
+  /** Raw (pre-curve) MIDI velocity of a noteOn, for dynamics calibration. */
+  rawVelocity(e: NoteEvent): number {
+    if (e.source === 'midi') return this.midi?.lastRaw.get(e.midi) ?? e.velocity ?? 0.5;
+    return e.velocity ?? 0.5;
+  }
+
+  /** Requests Web MIDI access (after the explanation, from a user gesture). */
+  async startMidi(): Promise<MidiInput | null> {
+    if (!webMidiSupported()) {
+      this.midiStatus.emit('unsupported');
+      return null;
+    }
+    await this.ensureAudio();
+    if (!this.midi) {
+      const midi = new MidiInput(this.clock);
+      this.midi = midi;
+      this.register(midi);
+      midi.onStatus((st) => this.midiStatus.emit(st));
+      midi.hotplug.on(({ name, connected, isInput }) => {
+        if (!isInput) return;
+        useApp.getState().toast(connected ? `${name} connected` : `${name} disconnected; plug it back in to continue`, connected ? 'good' : 'warn');
+      });
+      midi.deviceChanged.on((name) => {
+        meter.set({ ...meter.value, source: 'midi', deviceName: name, active: !!name });
+        if (name && name !== getSettings().midiInputName) useApp.getState().updateSettings({ midiInputName: name });
+        void this.reloadCalibration();
+      });
+    }
+    this.midi.wanted = getSettings().midiInputName;
+    await this.midi.start();
+    this.midiStatus.emit(this.midi.status);
+    await this.reloadCalibration();
+    return this.midi;
+  }
+
+  /** Routes scheduled playback to the keyboard over MIDI out when enabled. */
+  applyMidiOut(): void {
+    const eng = getEngine();
+    if (!eng) return;
+    const s = getSettings();
+    const out = s.midiOutPlayback && this.midi ? this.midi.output(s.midiOutputName) : null;
+    eng.setRoute(out ? new MidiOutSink(out, this.clock) : null, false);
+  }
+
+  stopMic(): void {
+    this.mic?.stop();
+    this.micStatus.emit('idle');
+  }
+
+  private onMicFrame(f: AnalysisFrame): void {
+    const now = performance.now();
+    if (now - this.meterThrottle < 33) return;
+    this.meterThrottle = now;
+    const live = this.mic?.tracker.live;
+    const has = !!live && live.midi > 0;
+    const octave = (getSettings().octaveOffset + (this.calibration.octaveOffset ?? 0)) * 12;
+    meter.set({
+      ...meter.value,
+      source: 'mic',
+      levelDb: f.levelDb,
+      floorDb: f.floorDb,
+      noteName: has ? nameOf(Math.round(live.midi) - octave) : null,
+      cents: has ? live.cents : null,
+      confidence: has ? live.clarity : 0,
+      active: true,
+    });
+  }
+
   private onEvent(e: NoteEvent): void {
     const s = getSettings();
     const eng = getEngine();
@@ -100,3 +257,8 @@ export const runtime = new Runtime();
 
 // Exposed for end-to-end tests and the dev console.
 (globalThis as unknown as { __openkeys: unknown }).__openkeys = { runtime, useApp };
+
+// Re-apply calibration/detector settings whenever settings change.
+useApp.subscribe((st, prev) => {
+  if (st.settings !== prev.settings) runtime.applyCalibration();
+});

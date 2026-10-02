@@ -8,6 +8,7 @@ import { runtime } from '../runtime';
 import { useDark } from '../hooks';
 import { PianoKeyboard } from '../components/PianoKeyboard';
 import { InputMeter } from '../components/InputMeter';
+import { InputStatus } from '../components/InputStatus';
 import { SheetView } from './SheetView';
 import { FallingNotes } from './FallingNotes';
 import { ResultsPanel } from './ResultsPanel';
@@ -334,6 +335,7 @@ function Practice({ score }: { score: Score }) {
             Library
           </button>
         </div>
+        <InputStatus />
         {twoHandsInMic && <div className="notice info small" style={{ marginBottom: 6 }}>Chord detection is approximate in mic mode; unclear notes are marked “?” and never count against you.</div>}
         {micMode && !settings.micAllowSpeakerPlayback && mode !== 'listen' && hands !== 'both' && settings.accompaniment && (
           <div className="notice small" style={{ marginBottom: 6 }}>

@@ -3,6 +3,7 @@ import { useApp } from '../store';
 import { runtime } from '../runtime';
 import { PianoKeyboard } from '../components/PianoKeyboard';
 import { InputMeter } from '../components/InputMeter';
+import { InputStatus } from '../components/InputStatus';
 import { midiToName } from '../../core/music';
 import { liveKeys } from '../live';
 
@@ -41,6 +42,7 @@ export function FreePlay() {
         </div>
       )}
       <div className="card" style={{ margin: '16px 0' }}>
+        <InputStatus />
         <InputMeter />
       </div>
       <PianoKeyboard

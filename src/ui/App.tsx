@@ -6,6 +6,7 @@ import { FreePlay } from './screens/FreePlay';
 import { Toasts } from './components/Toasts';
 import { ImportSummary } from './components/ImportSummary';
 import { importFiles } from './importer';
+import { CalibrationWizard } from './calibration/CalibrationWizard';
 
 const NAV: { id: Screen; label: string; icon: string }[] = [
   { id: 'today', label: 'Today', icon: '☀' },
@@ -32,6 +33,8 @@ export function App() {
   const loadSettings = useApp((s) => s.loadSettings);
   const [screens, setScreens] = useState<Partial<Record<Screen, () => ReactNode>>>({});
   const pendingImport = useApp((s) => s.pendingImport);
+  const calibrationOpen = useApp((s) => s.calibrationOpen);
+  const setApp = useApp((s) => s.set);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
@@ -131,6 +134,7 @@ export function App() {
       <Toasts />
       {pendingImport && <ImportSummary key={pendingImport.id} initial={pendingImport} existing={false} />}
       {dragging && <div className="drag-overlay">Drop to import</div>}
+      {calibrationOpen && <CalibrationWizard onClose={() => setApp({ calibrationOpen: false })} />}
     </div>
   );
 }

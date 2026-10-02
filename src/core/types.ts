@@ -22,6 +22,8 @@ export interface NoteEvent {
   cents?: number;
   /** Mic only: the detector is unsure whether this is the written octave. */
   octaveUncertain?: boolean;
+  /** Mic only (noteOff): the sound stopped abruptly (damper), so the release time is meaningful. */
+  abrupt?: boolean;
 }
 
 /** Mic mode, score-informed: evidence that an EXPECTED note is sounding. */
