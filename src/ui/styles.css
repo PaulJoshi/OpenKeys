@@ -936,3 +936,61 @@ kbd {
 .abc-paper .abc-playing path {
   fill: #2f6fde;
 }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 300;
+  background: var(--accent);
+  color: var(--accent-fg);
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+.skip-link:focus {
+  left: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .key.down,
+  .key.hit,
+  .key.wrong {
+    outline: 3px solid Highlight;
+  }
+  .btn.primary,
+  .nav button[aria-current='page'] {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* Landscape phones / small tablets: give the practice screen the whole height. */
+@media (max-height: 540px) and (orientation: landscape) {
+  .app.practicing {
+    grid-template-columns: 1fr;
+  }
+  .app.practicing .nav {
+    display: none;
+  }
+  .toolbar {
+    padding: 4px 8px;
+    gap: 6px;
+  }
+  .btn.big {
+    min-height: 40px;
+    padding: 6px 14px;
+    font-size: 1rem;
+  }
+  .bottom {
+    padding: 4px 8px 6px;
+  }
+}

@@ -39,6 +39,9 @@ class PracticeController {
   private score: Score | null = null;
   private idleBeat = 0;
   private opts: TakeOptions | null = null;
+  /** Notes the learner played in the last take (for take replay), on the audio clock. */
+  lastTakePlayed: { midi: number; time: number; duration: number; velocity: number }[] = [];
+  private openPlayed = new Map<number, { midi: number; time: number; duration: number; velocity: number }>();
   /** Score-informed mic detector for the current take (mic mode only). */
   detector: ScoreInformedDetector | null = null;
 
@@ -164,8 +167,27 @@ class PracticeController {
         }),
       );
     }
+    this.lastTakePlayed = [];
+    this.openPlayed.clear();
+    const recordPlayed = (e: { kind: string; midi: number; time: number; velocity?: number }) => {
+      if (e.kind === 'noteOn') {
+        const n = { midi: e.midi, time: e.time, duration: 0.4, velocity: e.velocity ?? 0.6 };
+        this.lastTakePlayed.push(n);
+        this.openPlayed.set(e.midi, n);
+      } else if (e.kind === 'noteOff') {
+        const n = this.openPlayed.get(e.midi);
+        if (n) n.duration = Math.max(0.05, e.time - n.time);
+        this.openPlayed.delete(e.midi);
+      }
+    };
     this.unsubs.push(
+      session.feedback.on((fb) => {
+        // Mic chords: what was played comes from the judge's hits and wrong notes.
+        if (!scoreInformed) return;
+        if (fb.type === 'hit' || fb.type === 'wrong') recordPlayed({ kind: 'noteOn', midi: fb.midi, time: fb.time });
+      }),
       runtime.bus.events.on((e) => {
+        if (!scoreInformed) recordPlayed(e);
         if (e.kind === 'noteOff' && e.source !== 'mic') liveKeys.release(e.midi);
         if (scoreInformed && e.source === 'mic') {
           this.detector?.onMonoEvent(e);

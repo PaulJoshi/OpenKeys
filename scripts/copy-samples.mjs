@@ -32,3 +32,14 @@ for (const v of LAYERS) {
   }
 }
 console.log(`[samples] ${copied} new sample files copied to public/samples/piano`);
+
+// Basic Pitch model (Apache-2.0, Spotify) for offline "transcribe what I played".
+try {
+  const modelDir = join(dirname(require.resolve('@spotify/basic-pitch/package.json')), 'model');
+  const outModel = join(process.cwd(), 'public', 'models', 'basic-pitch');
+  mkdirSync(outModel, { recursive: true });
+  for (const f of readdirSync(modelDir)) copyFileSync(join(modelDir, f), join(outModel, f));
+  console.log('[samples] Basic Pitch model copied to public/models/basic-pitch');
+} catch {
+  console.warn('[samples] @spotify/basic-pitch not installed; offline transcription disabled.');
+}

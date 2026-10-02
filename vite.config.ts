@@ -32,10 +32,15 @@ export default defineConfig({
         // App shell + built-in songs are precached; piano samples are cached on first use
         // (the sampler fetches every sample at start-up, so one session makes them offline).
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json,abc,musicxml}'],
-        globIgnores: ['samples/**'],
+        globIgnores: ['samples/**', 'models/**'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: 'index.html',
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/models/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'openkeys-models', expiration: { maxEntries: 10 }, cacheableResponse: { statuses: [0, 200] } },
+          },
           {
             urlPattern: ({ url }) => url.pathname.includes('/samples/'),
             handler: 'CacheFirst',

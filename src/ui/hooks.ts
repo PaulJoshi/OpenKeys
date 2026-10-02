@@ -18,3 +18,16 @@ export function useDark(): boolean {
 export function useEmitter<T>(subscribe: (cb: (v: T) => void) => () => void, cb: (v: T) => void, deps: unknown[] = []) {
   useEffect(() => subscribe(cb), deps); // eslint-disable-line react-hooks/exhaustive-deps
 }
+
+/** True while a media query matches. */
+export function useMedia(query: string): boolean {
+  const [m, setM] = useState(() => window.matchMedia?.(query).matches ?? false);
+  useEffect(() => {
+    const mq = window.matchMedia?.(query);
+    if (!mq) return;
+    const on = () => setM(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return m;
+}

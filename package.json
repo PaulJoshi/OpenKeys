@@ -19,6 +19,7 @@
     "accuracy": "ACCURACY=1 vitest run tests/accuracy/accuracy.test.ts --testTimeout=1800000"
   },
   "dependencies": {
+    "@spotify/basic-pitch": "^1.0.1",
     "@tonejs/midi": "^2.0.28",
     "abcjs": "^6.7.1",
     "dexie": "^4.4.6",

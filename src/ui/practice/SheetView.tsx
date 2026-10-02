@@ -187,7 +187,8 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
     // Keep the cursor's line in the upper third so the next line is visible ahead.
     const want = top - wrap.clientHeight * 0.18;
     if (top < wrap.scrollTop + 10 || top + h > wrap.scrollTop + wrap.clientHeight * 0.7) {
-      wrap.scrollTo({ top: Math.max(0, want), behavior: 'smooth' });
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      wrap.scrollTo({ top: Math.max(0, want), behavior: reduce ? 'auto' : 'smooth' });
     }
   };
 

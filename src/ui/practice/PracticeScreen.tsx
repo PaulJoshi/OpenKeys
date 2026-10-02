@@ -5,7 +5,7 @@ import { measureAtBeat, scoreEndBeat } from '../../core/score/tempo';
 import { noteRange } from '../../core/score/validate';
 import { useApp } from '../store';
 import { runtime } from '../runtime';
-import { useDark } from '../hooks';
+import { useDark, useMedia } from '../hooks';
 import { PianoKeyboard } from '../components/PianoKeyboard';
 import { InputMeter } from '../components/InputMeter';
 import { InputStatus } from '../components/InputStatus';
@@ -17,6 +17,8 @@ import { practiceLive } from './live';
 import { feedbackText } from './feedbackCopy';
 import { measureMastery, pieceMastery } from '../../core/progress/progress';
 import { QuickCheck } from '../calibration/QuickCheck';
+import { TakeReplay } from './TakeReplay';
+import { ShortcutsHelp } from '../components/ShortcutsHelp';
 import { kvSet } from '../../core/progress/db';
 
 const MODES: { id: PracticeMode; label: string; hint: string }[] = [
@@ -56,6 +58,7 @@ function Practice({ score }: { score: Score }) {
   const update = useApp((s) => s.updateSettings);
   const go = useApp((s) => s.go);
   const dark = useDark();
+  const compact = useMedia('(max-height: 560px)');
   const hasL = score.notes.some((n) => n.hand === 'L');
   const hasR = score.notes.some((n) => n.hand !== 'L');
   const [mode, setMode] = useState<PracticeMode>('wait');
@@ -74,6 +77,8 @@ function Practice({ score }: { score: Score }) {
   const [reviewId, setReviewId] = useState<string | null>(null);
   const [quickCheck, setQuickCheck] = useState(false);
   const [anyPitch, setAnyPitch] = useState(false);
+  const [replay, setReplay] = useState(false);
+  const [help, setHelp] = useState(false);
 
   const running = state !== 'idle' && state !== 'finished';
   const micMode = settings.inputSource === 'mic';
@@ -236,6 +241,8 @@ function Practice({ score }: { score: Score }) {
       } else if (e.code === 'KeyH' && letterOk) {
         e.preventDefault();
         if (hasL && hasR) setHands((h) => (h === 'R' ? 'L' : h === 'L' ? 'both' : 'R'));
+      } else if (e.key === '?') {
+        setHelp(true);
       } else if (e.code === 'Enter' && practice.session?.mode === 'wait') {
         practice.skip();
       }
@@ -290,9 +297,9 @@ function Practice({ score }: { score: Score }) {
             </button>
           ))}
         </div>
-        <label className="row" style={{ gap: 6 }} title="Tempo (+/−)">
-          <span className="small muted">Tempo</span>
-          <input type="range" min={25} max={150} step={5} value={Math.round(tempo * 100)} disabled={running} onChange={(e) => setTempo(Number(e.target.value) / 100)} aria-label="Tempo percent" />
+ <label className="row" style={{ gap: 6 }} title="Tempo (+/−)">
+          {!compact && <span className="small muted">Tempo</span>}
+          <input type="range" style={compact ? { width: 90 } : undefined} min={25} max={150} step={5} value={Math.round(tempo * 100)} disabled={running} onChange={(e) => setTempo(Number(e.target.value) / 100)} aria-label="Tempo percent" />
           <b style={{ minWidth: 48 }}>{Math.round((rampTempo ?? tempo) * 100)}%</b>
         </label>
         <button className={`btn small ${settings.metronome ? 'active' : ''}`} onClick={() => update({ metronome: !settings.metronome })} disabled={running} aria-pressed={settings.metronome}>
@@ -307,9 +314,12 @@ function Practice({ score }: { score: Score }) {
             </button>
           </span>
         ) : (
-          <span className="small muted">Drag across bars to loop · <kbd>Shift</kbd>+<kbd>L</kbd></span>
+          !compact && <span className="small muted">Drag across bars to loop · <kbd>Shift</kbd>+<kbd>L</kbd></span>
         )}
         <div className="grow" />
+        <button className="btn small ghost" onClick={() => setHelp(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
+          ⌨ ?
+        </button>
         <div className="seg" aria-label="View">
           {(['sheet', 'both', 'falling'] as const).map((v) => (
             <button key={v} aria-pressed={settings.view === v} onClick={() => update({ view: v })}>
@@ -338,6 +348,7 @@ function Practice({ score }: { score: Score }) {
             micMode={micMode}
             onClose={() => setResult(null)}
             onRetry={() => start()}
+            onReplay={practice.lastTakePlayed.length ? () => setReplay(true) : undefined}
             onPractise={(a, b, t) => {
               setLoopRange(a, b);
               setMode('loop');
@@ -348,10 +359,12 @@ function Practice({ score }: { score: Score }) {
         )}
       </div>
 
+      {help && <ShortcutsHelp virtual={settings.inputSource === 'virtual'} onClose={() => setHelp(false)} />}
+      {replay && result && <TakeReplay score={score} result={result} onClose={() => setReplay(false)} />}
       {quickCheck && <QuickCheck onClose={() => setQuickCheck(false)} />}
       <div className="bottom">
-        <div className="row" style={{ marginBottom: 8 }}>
-          <InputMeter />
+        <div className="row" style={{ marginBottom: compact ? 2 : 8 }}>
+          {!compact && <InputMeter />}
           <div className="grow feedback-line" aria-live="polite">
             {line || (running ? '' : modeHint)}
           </div>
@@ -375,8 +388,8 @@ function Practice({ score }: { score: Score }) {
         <PianoKeyboard
           low={low}
           high={high}
-          height={110}
-          labels={nameOpacity > 0.5 ? 'all' : 'c'}
+          height={compact ? 64 : 110}
+          labels={compact ? 'none' : nameOpacity > 0.5 ? 'all' : 'c'}
           keyHintsBase={settings.inputSource === 'virtual' ? baseC : null}
           onPress={(m, v, t) => {
             void runtime.ensureAudio();

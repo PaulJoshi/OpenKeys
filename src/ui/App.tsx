@@ -115,7 +115,10 @@ export function App() {
   const render = screens[screen] ?? (screen === 'free' ? () => <FreePlay /> : null);
 
   return (
-    <div className="app">
+    <div className={`app${screen === 'practice' ? ' practicing' : ''}`}>
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <nav className="nav" aria-label="Main">
         <div className="brand">
           <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />
@@ -130,7 +133,7 @@ export function App() {
         <div className="spacer" />
         <div className="small">Free &amp; open source · MIT</div>
       </nav>
-      <main className="main" id="main">
+      <main className="main" id="main" tabIndex={-1}>
         {render ? render() : <div className="page muted">Loading…</div>}
       </main>
       <Toasts />
