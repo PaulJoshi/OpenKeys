@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "accuracy": "vitest run tests/accuracy --reporter=verbose"
+    "accuracy": "ACCURACY=1 vitest run tests/accuracy/accuracy.test.ts --testTimeout=1800000"
   },
   "dependencies": {
     "@tonejs/midi": "^2.0.28",

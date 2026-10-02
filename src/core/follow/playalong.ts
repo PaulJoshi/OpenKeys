@@ -241,7 +241,9 @@ export class PlayAlongFollower implements Follower {
       const wi = m.wrong.get(n.id);
       if (wi !== undefined) {
         const p = this.played[wi];
-        const uncertain = p.confidence < this.opts.confidenceThreshold;
+        // Honesty: in mic mode, if there was some evidence for the expected note itself, don't
+        // claim the learner played a wrong note: say "unsure" instead.
+        const uncertain = p.confidence < this.opts.confidenceThreshold || (this.opts.source === 'mic' && this.uncertain.has(n.id));
         results.push({ ...base, verdict: uncertain ? 'uncertain' : 'wrong', playedMidi: p.midi, playedTime: p.time, confidence: p.confidence });
         continue;
       }

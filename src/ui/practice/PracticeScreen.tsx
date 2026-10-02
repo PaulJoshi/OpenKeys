@@ -16,6 +16,7 @@ import { practice } from './controller';
 import { practiceLive } from './live';
 import { feedbackText } from './feedbackCopy';
 import { measureMastery, pieceMastery } from '../../core/progress/progress';
+import { QuickCheck } from '../calibration/QuickCheck';
 
 const MODES: { id: PracticeMode; label: string; hint: string }[] = [
   { id: 'listen', label: 'Listen', hint: 'Hear the piece; the cursor follows.' },
@@ -70,6 +71,7 @@ function Practice({ score }: { score: Score }) {
   const [baseC, setBaseC] = useState(runtime.virtual.baseC);
   const pulseRef = useRef<HTMLDivElement>(null);
   const [reviewId, setReviewId] = useState<string | null>(null);
+  const [quickCheck, setQuickCheck] = useState(false);
 
   const running = state !== 'idle' && state !== 'finished';
   const micMode = settings.inputSource === 'mic';
@@ -114,6 +116,10 @@ function Practice({ score }: { score: Score }) {
         setResult(res);
         setRampTempo(null);
         if (res) setLine('');
+        // Many unclear notes in mic mode: offer the 10-second quick check.
+        if (res && res.source === 'mic' && res.notes.length >= 8 && res.uncertainCount / res.notes.length > 0.2) {
+          useApp.getState().toast('Many notes were unclear to the microphone.', 'warn', { label: 'Quick check', run: () => setQuickCheck(true) });
+        }
       }),
       practice.feedback.on((fb) => {
         const st = practice.session?.stats.streak ?? 0;
@@ -320,6 +326,7 @@ function Practice({ score }: { score: Score }) {
         )}
       </div>
 
+      {quickCheck && <QuickCheck onClose={() => setQuickCheck(false)} />}
       <div className="bottom">
         <div className="row" style={{ marginBottom: 8 }}>
           <InputMeter />

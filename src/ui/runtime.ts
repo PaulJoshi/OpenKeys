@@ -162,7 +162,11 @@ class Runtime {
     mic.frames.on((f) => this.onMicFrame(f));
     await mic.start();
     this.micStatus.emit(mic.status);
-    if (mic.status === 'running') await this.reloadCalibration();
+    if (mic.status === 'running') {
+      await this.reloadCalibration();
+      // A microphone OpenKeys has never calibrated: offer the setup.
+      if (!this.calibration.updatedAt) useApp.getState().toast(`New microphone (${mic.warnings?.label || 'default'}): a 2-minute setup makes feedback more accurate.`, 'info', { label: 'Set up', run: () => useApp.getState().set({ calibrationOpen: true }) });
+    }
     return mic;
   }
 

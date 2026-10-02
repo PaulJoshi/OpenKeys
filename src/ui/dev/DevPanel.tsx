@@ -136,7 +136,7 @@ function SignalTab() {
       p.fillStyle = '#fff';
       const live = runtime.mic?.tracker.live;
       p.fillText(`pitch track (blue = clarity, red = octave unsure) ${live && live.midi ? `${midiToName(Math.round(live.midi))} ${live.cents > 0 ? '+' : ''}${Math.round(live.cents)}¢` : ''}`, 6, 12);
-      const ev = practice.session ? (window as unknown as { __openkeysEvidence?: string }).__openkeysEvidence ?? '' : '';
+      const ev = practice.evidenceDebug();
       setEvidence((prev) => (prev === ev ? prev : ev));
     };
     raf = requestAnimationFrame(draw);

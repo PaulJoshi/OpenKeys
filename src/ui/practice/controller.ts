@@ -9,6 +9,8 @@ import { liveKeys } from '../live';
 import { practiceLive } from './live';
 import { getSettings, useApp } from '../store';
 import { Emitter } from '../../core/emitter';
+import { ScoreInformedDetector } from '../../core/input/mic/scoreinformed';
+import { midiToName } from '../../core/music';
 
 export interface TakeOptions {
   mode: PracticeMode;
@@ -34,6 +36,18 @@ class PracticeController {
   private score: Score | null = null;
   private idleBeat = 0;
   private opts: TakeOptions | null = null;
+  /** Score-informed mic detector for the current take (mic mode only). */
+  detector: ScoreInformedDetector | null = null;
+
+  /** Per-expected-note evidence lines for the dev panel. */
+  evidenceDebug(): string {
+    const d = this.detector;
+    if (!d) return '';
+    return [...d.debug.values()]
+      .slice(-8)
+      .map((e) => `${midiToName(e.midi).padEnd(4)} presence ${e.presence.toFixed(2)} ${e.fresh ? 'fresh' : 'ringing'}${e.octaveTrap > 0.3 ? ` octave? ${e.octaveTrap.toFixed(2)}` : ''}`)
+      .join('\n');
+  }
 
   setScore(score: Score | null) {
     this.stop(false);
@@ -66,7 +80,7 @@ class PracticeController {
     const engine = await runtime.ensureAudio();
     const s = getSettings();
     const source = s.inputSource;
-    const mic = source === 'mic';
+    const micMode = source === 'mic';
     this.opts = opts;
     const config: SessionConfig = {
       mode: opts.mode,
@@ -78,7 +92,7 @@ class PracticeController {
       preset: s.timingPreset,
       source,
       accompaniment: s.accompaniment,
-      appAudioAllowed: !mic || s.micAllowSpeakerPlayback || opts.mode === 'listen',
+      appAudioAllowed: !micMode || s.micAllowSpeakerPlayback || opts.mode === 'listen',
       metronome: s.metronome,
       subdivision: s.subdivision,
       countInBars: opts.mode === 'wait' || opts.mode === 'followme' ? 0 : s.countInBars,
@@ -100,7 +114,7 @@ class PracticeController {
         if (runtime.bus.isSounding(midi)) return true;
         // Mic has no key-up: a struck note keeps ringing for a while.
         const last = runtime.bus.held.get(midi);
-        return mic && !!last && now - last.time < 1.2;
+        return micMode && !!last && now - last.time < 1.2;
       },
       playNow: (notes) => engine.player.playNow(notes),
     });
@@ -115,9 +129,44 @@ class PracticeController {
         ? { startBeat: score.measures[r?.startMeasure ?? 0].startBeat, endBeat: score.measures[r?.endMeasure ?? score.measures.length - 1].startBeat + score.measures[r?.endMeasure ?? score.measures.length - 1].lengthBeats }
         : null;
 
+    // Mic mode judges with score-informed evidence; mono notes only assist the detector.
+    const mic = runtime.mic;
+    const scoreInformed = source === 'mic' && !!mic && opts.mode !== 'listen';
+    if (scoreInformed && mic) {
+      const d = s.detector;
+      const cal = runtime.calibration;
+      const latency = mic.tracker.opts.latency;
+      const det = new ScoreInformedDetector({
+        a4: mic.tracker.opts.a4,
+        octaveOffset: mic.tracker.opts.octaveOffset,
+        latency,
+        partials: d.partials,
+        inharmonicity: d.inharmonicity,
+        partialToleranceCents: d.partialToleranceCents,
+        presenceThreshold: d.presenceThreshold,
+        wrongNoteThreshold: d.wrongNoteThreshold,
+        expected: (now) => session.expectedNear(now),
+        appSounding: (raw) => engine.log.soundingAt(raw - latency).map((m) => m + 12 * mic.tracker.opts.octaveOffset),
+        clickNear: (t) => engine.log.clickNear(t),
+        profile: cal.instrumentProfile ?? null,
+        velocityFor: (snr) => mic.tracker.velocityFor(snr, 0),
+      });
+      this.detector = det;
+      this.unsubs.push(
+        mic.frames.on((f) => {
+          const { evidence, wrong } = det.push(f);
+          for (const ev of evidence) session.handleEvidence(ev);
+          for (const w of wrong) session.handleNote(w);
+        }),
+      );
+    }
     this.unsubs.push(
       runtime.bus.events.on((e) => {
         if (e.kind === 'noteOff' && e.source !== 'mic') liveKeys.release(e.midi);
+        if (scoreInformed && e.source === 'mic') {
+          this.detector?.onMonoEvent(e);
+          return;
+        }
         session.handleNote(e);
       }),
       session.feedback.on((fb) => this.onFeedback(fb, score)),
@@ -218,6 +267,7 @@ class PracticeController {
   }
 
   private cleanup() {
+    this.detector = null;
     cancelAnimationFrame(this.raf);
     for (const u of this.unsubs) u();
     this.unsubs = [];

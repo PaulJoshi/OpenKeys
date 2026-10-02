@@ -107,7 +107,14 @@ export function parseAbcDetailed(text: string, opts: { splitPoint?: number; id?:
     issues.push({ message: 'The tune contains no notes.' });
     return { score: null, issues, noteChars };
   }
-  if (nonEmpty.length === 1) assignHandsBySplit(raw, opts.splitPoint ?? 60);
+  if (nonEmpty.length === 1) {
+    // One voice: a bass-clef voice is the left hand; a treble melody that stays above E3 is the
+    // right hand; anything else (piano parts written in one voice) is split by pitch.
+    const clef = trackClefs[nonEmpty[0].i] ?? 'treble';
+    if (clef.startsWith('bass')) for (const n of raw) n.hand = 'L';
+    else if (raw.every((n) => n.midi >= 52)) for (const n of raw) n.hand = 'R';
+    else assignHandsBySplit(raw, opts.splitPoint ?? 60);
+  }
 
   // Propagate dynamics forward per hand and map to velocity.
   const dynVel: Record<string, number> = { ppp: 0.16, pp: 0.26, p: 0.38, mp: 0.5, mf: 0.62, f: 0.75, ff: 0.87, fff: 0.96 };
