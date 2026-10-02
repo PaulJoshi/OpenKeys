@@ -3,6 +3,7 @@ import type { HandSelection, Score } from '../../core/types';
 import { keyboardLayout } from '../components/PianoKeyboard';
 import { midiToName } from '../../core/music';
 import { practiceLive, verdictHex } from './live';
+import { OK, canvasColors } from '../design/palette';
 
 interface Props {
   score: Score;
@@ -27,15 +28,7 @@ export function FallingNotes({ score, low, high, hands, lookAheadSec, dark, show
     const geo = new Map(keyboardLayout(low, high).map((k) => [k.midi, k]));
     const notes = [...score.notes].sort((a, b) => a.startBeat - b.startBeat);
     const maxDur = Math.max(4, ...notes.map((n) => n.durationBeats));
-    const col = {
-      bg: dark ? '#0f141d' : '#f3f1ec',
-      lane: dark ? '#161d29' : '#ebe8e1',
-      line: dark ? '#2a3445' : '#d9d4c8',
-      R: dark ? '#6b9cff' : '#2f6fde',
-      L: dark ? '#f0a050' : '#d9822b',
-      text: dark ? '#c7cfdd' : '#3b4252',
-      hit: dark ? '#e9eef7' : '#141922',
-    };
+    const col = { ...canvasColors(dark), hit: dark ? OK.white : OK.ink };
     const practised = (h: string) => hands === 'both' || h === hands || (h === 'unknown' && hands === 'R');
     let raf = 0;
     let w = 0;
@@ -80,15 +73,17 @@ export function FallingNotes({ score, low, high, hands, lookAheadSec, dark, show
       // Loop range shading.
       const loop = practiceLive.loop;
       if (loop) {
-        ctx.fillStyle = dark ? 'rgba(107,156,255,0.08)' : 'rgba(47,111,222,0.07)';
+        ctx.fillStyle = OK.blue;
+        ctx.globalAlpha = 0.07;
         const y0 = yOf(loop.endBeat);
         const y1 = yOf(loop.startBeat);
         ctx.fillRect(0, Math.max(0, y0), w, Math.min(h, y1) - Math.max(0, y0));
+        ctx.globalAlpha = 1;
       }
       // Measure lines.
       ctx.strokeStyle = col.line;
       ctx.fillStyle = col.text;
-      ctx.font = '11px system-ui, sans-serif';
+      ctx.font = '500 11px Inter, system-ui, sans-serif';
       ctx.lineWidth = 1;
       for (const m of score.measures) {
         const y = yOf(m.startBeat);
@@ -113,7 +108,7 @@ export function FallingNotes({ score, low, high, hands, lookAheadSec, dark, show
         const x = (k.left / 100) * w + 1;
         const bw = Math.max(3, (k.width / 100) * w - 2);
         const mark = practiceLive.marks.get(n.id);
-        let fill = n.hand === 'L' ? col.L : col.R;
+        let fill: string = n.hand === 'L' ? col.L : col.R;
         let alpha = practised(n.hand) ? 1 : 0.28;
         if (mark) {
           fill = verdictHex(mark, dark);
@@ -121,16 +116,15 @@ export function FallingNotes({ score, low, high, hands, lookAheadSec, dark, show
         }
         ctx.globalAlpha = alpha;
         ctx.fillStyle = fill;
-        roundRect(ctx, x, yTop, bw, Math.max(4, yBot - yTop - 1), Math.min(5, bw / 3));
-        ctx.fill();
+        ctx.fillRect(x, yTop, bw, Math.max(4, yBot - yTop - 1));
         if (k.black) {
-          ctx.strokeStyle = dark ? '#000' : 'rgba(0,0,0,0.35)';
-          ctx.stroke();
+          ctx.strokeStyle = OK.ink;
+          ctx.strokeRect(x + 0.5, yTop + 0.5, bw - 1, Math.max(4, yBot - yTop - 1) - 1);
         }
         if (showNames && yBot - yTop > 16 && bw > 12) {
           ctx.globalAlpha = 1;
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 10px system-ui, sans-serif';
+          ctx.fillStyle = fill === col.L ? OK.ink : OK.white;
+          ctx.font = '500 10px Inter, system-ui, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(midiToName(n.midi, false, false), x + bw / 2, yBot - 5);
           ctx.textAlign = 'start';
@@ -152,7 +146,7 @@ export function FallingNotes({ score, low, high, hands, lookAheadSec, dark, show
         if (!k) continue;
         const a = Math.min(1, (f.until - now) / 200);
         ctx.globalAlpha = a;
-        ctx.fillStyle = f.kind === 'hit' ? verdictHex('perfect', dark) : f.kind === 'wrong' ? verdictHex('wrong', dark) : '#8a90a0';
+        ctx.fillStyle = f.kind === 'hit' ? verdictHex('perfect', dark) : f.kind === 'wrong' ? verdictHex('wrong', dark) : OK.stone;
         const x = (k.left / 100) * w;
         ctx.fillRect(x - 2, hitY - 10, (k.width / 100) * w + 4, 16);
         ctx.globalAlpha = 1;
@@ -170,14 +164,4 @@ export function FallingNotes({ score, low, high, hands, lookAheadSec, dark, show
       <canvas ref={canvasRef} aria-label="Falling notes" role="img" />
     </div>
   );
-}
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
 }

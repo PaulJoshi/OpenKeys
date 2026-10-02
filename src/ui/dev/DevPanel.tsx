@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Icon } from '../components/Icon';
 import { useApp } from '../store';
 import { runtime } from '../runtime';
 import { practice } from '../practice/controller';
@@ -37,7 +38,7 @@ export function DevPanel() {
           ))}
         </div>
         <button className="btn ghost small" onClick={() => setOpen(false)} aria-label="Hide dev panel">
-          ✕
+          <Icon name="x" size={14} />
         </button>
       </div>
       {tab === 'signal' && <SignalTab />}

@@ -9,17 +9,18 @@ import { importFiles } from './importer';
 import { CalibrationWizard } from './calibration/CalibrationWizard';
 import { DevPanel } from './dev/DevPanel';
 import { QuickCheck } from './calibration/QuickCheck';
+import { Icon } from './components/Icon';
 
-const NAV: { id: Screen; label: string; icon: string }[] = [
-  { id: 'today', label: 'Today', icon: '☀' },
-  { id: 'library', label: 'Library', icon: '♫' },
-  { id: 'practice', label: 'Practice', icon: '▶' },
-  { id: 'course', label: 'Course', icon: '◎' },
-  { id: 'drills', label: 'Drills', icon: '⟳' },
-  { id: 'free', label: 'Free play', icon: '♪' },
-  { id: 'editor', label: 'Script editor', icon: '✎' },
-  { id: 'progress', label: 'Progress', icon: '↗' },
-  { id: 'settings', label: 'Settings', icon: '⚙' },
+const NAV: { id: Screen; label: string }[] = [
+  { id: 'today', label: 'Today' },
+  { id: 'library', label: 'Library' },
+  { id: 'practice', label: 'Practice' },
+  { id: 'course', label: 'Course' },
+  { id: 'drills', label: 'Drills' },
+  { id: 'free', label: 'Free play' },
+  { id: 'editor', label: 'Script editor' },
+  { id: 'progress', label: 'Progress' },
+  { id: 'settings', label: 'Settings' },
 ];
 
 function isTyping(e: KeyboardEvent): boolean {
@@ -121,20 +122,21 @@ export function App() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <nav className="nav" aria-label="Main">
-        <div className="brand">
-          <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />
-          OpenKeys
+      <header className="nav">
+        <div className="brand">OpenKeys</div>
+        <nav className="nav-links" aria-label="Main">
+          {NAV.map((n) => (
+            <button key={n.id} aria-current={screen === n.id ? 'page' : undefined} onClick={() => go(n.id)}>
+              {n.label}
+            </button>
+          ))}
+        </nav>
+        <div className="nav-end">
+          <a className="icon-btn" href="https://github.com/PaulJoshi/OpenKeys" target="_blank" rel="noreferrer" aria-label="OpenKeys on GitHub" title="Free and open source, MIT licensed">
+            <Icon name="github" />
+          </a>
         </div>
-        {NAV.map((n) => (
-          <button key={n.id} aria-current={screen === n.id ? 'page' : undefined} onClick={() => go(n.id)}>
-            <span aria-hidden="true">{n.icon}</span>
-            {n.label}
-          </button>
-        ))}
-        <div className="spacer" />
-        <div className="small">Free &amp; open source · MIT</div>
-      </nav>
+      </header>
       <main className="main" id="main" tabIndex={-1}>
         {render ? render() : <div className="page muted">Loading…</div>}
       </main>

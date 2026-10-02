@@ -8,6 +8,7 @@ import { songById } from '../../core/content/songs';
 import { useApp } from '../store';
 import { openPractice } from '../learn/open';
 import { MiniKeyboard } from '../learn/MiniKeyboard';
+import { Icon, Stars } from '../components/Icon';
 
 export async function lessonStars(): Promise<Map<string, number>> {
   const rows = await getDb().lessons.toArray();
@@ -35,19 +36,16 @@ export function Course() {
           const s = stars.get(lessonKey(l.id, 'piece')) ?? 0;
           const done = s >= 2;
           return (
-            <div key={l.id} className={`card lesson-node${done ? ' done' : ''}`} style={i === next ? { borderColor: 'var(--accent)', borderWidth: 2 } : undefined}>
+            <div key={l.id} className={`card lesson-node${done ? ' done' : ''}`} >
               <div className="num" aria-hidden="true">
-                {done ? '✓' : l.number}
+                {done ? <Icon name="check" /> : l.number}
               </div>
               <div className="grow">
                 <h3 style={{ margin: 0 }}>
-                  {l.number}. {l.title} {i === next && <span className="pill good">Next</span>}
+                  {l.number}. {l.title} {i === next && <span className="pill">Next</span>}
                 </h3>
                 <div className="muted small">{l.summary}</div>
-                <div className="stars" style={{ fontSize: '1.1rem' }} aria-label={`${s} of 3 stars`}>
-                  {'★'.repeat(s)}
-                  <span style={{ opacity: 0.25 }}>{'★'.repeat(3 - s)}</span>
-                </div>
+                <Stars earned={s} />
               </div>
               <button className={`btn ${i === next ? 'primary' : ''}`} onClick={() => setOpen(l)}>
                 {done ? 'Review' : i === next ? 'Start' : 'Open'}
@@ -110,10 +108,7 @@ function LessonView({ lesson, stars, onBack }: { lesson: Lesson; stars: Map<stri
               <b>{ex.title}</b>
               <div className="muted small">{ex.hint}</div>
             </div>
-            <span className="stars" style={{ fontSize: '1rem' }} aria-label={`${st(ex.id)} stars`}>
-              {'★'.repeat(st(ex.id))}
-              <span style={{ opacity: 0.25 }}>{'★'.repeat(3 - st(ex.id))}</span>
-            </span>
+            <Stars earned={st(ex.id)} />
             <button className="btn primary" onClick={() => startExercise(i)}>
               Practise
             </button>
@@ -126,10 +121,7 @@ function LessonView({ lesson, stars, onBack }: { lesson: Lesson; stars: Map<stri
           <b>{song.title}</b> <span className="muted">· {song.composer}</span>
           <div className="muted small">{song.blurb} Earn 2 stars to complete the lesson.</div>
         </div>
-        <span className="stars" style={{ fontSize: '1rem' }}>
-          {'★'.repeat(st('piece'))}
-          <span style={{ opacity: 0.25 }}>{'★'.repeat(3 - st('piece'))}</span>
-        </span>
+        <Stars earned={st('piece')} />
         <button className="btn primary" onClick={() => openPractice(builtInScore(song, lesson.piece.variant), { mode: lesson.piece.mode, hands: lesson.piece.hands }, lessonKey(lesson.id, 'piece'))}>
           Play the piece
         </button>

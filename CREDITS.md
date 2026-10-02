@@ -24,6 +24,12 @@
 | [TensorFlow.js](https://www.tensorflow.org/js) | Apache-2.0 | Runs Basic Pitch locally |
 | [Vite](https://vitejs.dev/), [Vitest](https://vitest.dev/), [Playwright](https://playwright.dev/), [TypeScript](https://www.typescriptlang.org/) | MIT / Apache-2.0 | Build and tests |
 
+## Design
+
+- [Inter](https://rsms.me/inter/) by Rasmus Andersson and [Bebas Neue](https://github.com/dharmatype/Bebas-Neue) by
+  Dharma Type, both SIL Open Font License 1.1, self-hosted in `src/ui/design/fonts`.
+- Icons from [Lucide](https://lucide.dev) (ISC).
+
 ## Algorithms
 
 - YIN: A. de Cheveigné and H. Kawahara, *YIN, a fundamental frequency estimator for speech and music*, JASA 2002.

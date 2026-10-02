@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useDark } from '../hooks';
+import { OK } from '../design/palette';
 
-/** Series colours validated with the dataviz palette checker (light / dark surfaces). */
+/** Series colours: ink (white when dark) for the main series, design-system blue for the second. */
 export function seriesColors(dark: boolean): [string, string] {
-  return dark ? ['#5b8ef5', '#c77a30'] : ['#2f6fde', '#b86a1c'];
+  return dark ? [OK.white, OK.blue] : [OK.ink, OK.blue];
 }
 
 interface Tip {
@@ -72,7 +73,7 @@ function ChartTip({ tip }: { tip: Tip }) {
   return (
     <div
       role="tooltip"
-      style={{ position: 'absolute', left: `${tip.x}%`, top: 0, transform: 'translate(-50%, -100%)', background: 'var(--fg)', color: 'var(--bg)', padding: '4px 8px', borderRadius: 6, fontSize: 12, pointerEvents: 'none', whiteSpace: 'pre' }}
+      style={{ position: 'absolute', left: `${tip.x}%`, top: 0, transform: 'translate(-50%, -100%)', background: 'var(--fg)', color: 'var(--bg)', padding: '4px 8px', fontSize: 12, pointerEvents: 'none', whiteSpace: 'pre' }}
     >
       {tip.text}
     </div>

@@ -20,6 +20,7 @@ import { QuickCheck } from '../calibration/QuickCheck';
 import { TakeReplay } from './TakeReplay';
 import { ShortcutsHelp } from '../components/ShortcutsHelp';
 import { kvSet } from '../../core/progress/db';
+import { Icon } from '../components/Icon';
 
 const MODES: { id: PracticeMode; label: string; hint: string }[] = [
   { id: 'listen', label: 'Listen', hint: 'Hear the piece; the cursor follows.' },
@@ -275,7 +276,7 @@ function Practice({ score }: { score: Score }) {
     <div className="practice">
       <div className="toolbar" role="toolbar" aria-label="Practice controls">
         <button className={`btn big ${running ? '' : 'primary'}`} onClick={toggle} aria-keyshortcuts="Space" style={{ minWidth: 120 }}>
-          {running ? '■ Stop' : '▶ Start'}
+          {running ? <><Icon name="square" size={18} /> Stop</> : <><Icon name="play" size={18} /> Start</>}
         </button>
         <div className="seg" role="radiogroup" aria-label="Mode">
           {MODES.map((m) => (
@@ -310,7 +311,7 @@ function Practice({ score }: { score: Score }) {
           <span className="pill">
             Loop bars {measureNo(range.startMeasure)}–{measureNo(range.endMeasure)}
             <button className="btn ghost small" onClick={clearLoop} disabled={running} aria-label="Clear loop">
-              ✕
+              <Icon name="x" size={14} />
             </button>
           </span>
         ) : (
@@ -318,7 +319,7 @@ function Practice({ score }: { score: Score }) {
         )}
         <div className="grow" />
         <button className="btn small ghost" onClick={() => setHelp(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
-          ⌨ ?
+          <Icon name="keyboard" size={18} />
         </button>
         <div className="seg" aria-label="View">
           {(['sheet', 'both', 'falling'] as const).map((v) => (
@@ -368,7 +369,9 @@ function Practice({ score }: { score: Score }) {
           <div className="grow feedback-line" aria-live="polite">
             {line || (running ? '' : modeHint)}
           </div>
-          {streak >= 3 && <span className="streak" title="Hit streak">🔥 {streak}</span>}
+          {streak >= 3 && <span className="streak" title="Hit streak">
+              <Icon name="flame" size={18} /> {streak}
+            </span>}
           <span className="small muted">
             {score.title}
             {score.variant ? ` · ${score.variant}` : ''}

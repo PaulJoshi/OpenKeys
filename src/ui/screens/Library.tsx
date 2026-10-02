@@ -163,7 +163,7 @@ export function MasteryStrip({ measures, mastery }: { measures: number; mastery?
     <div style={{ display: 'flex', gap: 1, height: 10 }} aria-label="Mastery by bar" title="Mastery by bar">
       {Array.from({ length: n }, (_, i) => {
         const v = mastery.get(i);
-        return <div key={i} style={{ flex: 1, borderRadius: 2, background: v === undefined ? 'var(--bg-3)' : heatColor(v) }} />;
+        return <div key={i} style={{ flex: 1, background: v === undefined ? 'var(--bg-3)' : heatColor(v).background }} />;
       })}
     </div>
   );

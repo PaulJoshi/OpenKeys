@@ -112,3 +112,8 @@ frustrating feedback**. This file records those choices and why.
     rhythmic variety, two-handedness and hand independence; weights are tuned on the bundled songs.
 33. **Accuracy is reported, not promised.** `docs/ACCURACY.md` is generated from real Salamander recordings and a
     simulated laptop-mic chain; real CT-S1 numbers will be added from labelled takes.
+34. **The OpenKeys Design System is the visual source of truth** (`docs/design-system/`, rules summarised in
+    `CLAUDE.md`). The app keeps its own CSS classes but every value comes from the system's tokens. Two
+    extensions the system doesn't cover: a dark theme built by inverting its neutrals (ink canvas, charcoal
+    stage, white text), and the left hand drawn in the soft purple accent so it stays distinct from the
+    blue "play this" right hand and the green/red verdict colours.
