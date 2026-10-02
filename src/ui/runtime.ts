@@ -140,6 +140,8 @@ class Runtime {
         onsetMultiplier: s.detector.onsetMultiplier,
         onsetMedianFrames: s.detector.onsetMedianFrames,
         onsetMinGap: s.detector.onsetMinGap,
+        onsetMinSnrDb: s.detector.onsetMinSnrDb,
+        onsetWeakRatio: s.detector.onsetWeakRatio,
         calibratedFloorDb: c.noiseFloorDb ?? null,
         pitchFrame: s.range.low < 31 ? 4096 : 2048,
       });

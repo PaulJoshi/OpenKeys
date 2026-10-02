@@ -197,6 +197,8 @@ const SLIDERS: { key: keyof DetectorParams; label: string; min: number; max: num
   { key: 'onsetDelta', label: 'Onset delta', min: 0.02, max: 0.5, step: 0.01 },
   { key: 'onsetMultiplier', label: 'Onset multiplier', min: 1, max: 4, step: 0.1 },
   { key: 'onsetMedianFrames', label: 'Onset median frames', min: 8, max: 64, step: 1 },
+  { key: 'onsetMinSnrDb', label: 'Noise gate (dB above floor)', min: 4, max: 30, step: 1 },
+  { key: 'onsetWeakRatio', label: 'Weak onset ratio', min: 0.2, max: 1, step: 0.05 },
   { key: 'onsetMinGap', label: 'Onset min gap (s)', min: 0.01, max: 0.1, step: 0.005 },
   { key: 'medianFrames', label: 'Pitch median frames', min: 1, max: 7, step: 1 },
   { key: 'hysteresisCents', label: 'Hysteresis (cents)', min: 0, max: 45, step: 1 },

@@ -33,6 +33,8 @@ export function TakesTab() {
       pitchAlgorithm: detector.pitchAlgorithm,
       onsetDelta: detector.onsetDelta,
       onsetMultiplier: detector.onsetMultiplier,
+      onsetMinSnrDb: detector.onsetMinSnrDb,
+      onsetWeakRatio: detector.onsetWeakRatio,
     }, { ...runtime.mic?.tracker.opts, latency: meta.micLatency, clickNear: undefined, appSounding: undefined });
     // MIDI truth times are on the output-mapped clock; mic events are latency-corrected: comparable.
     setMetrics((m) => ({ ...m, [t.id!]: evaluate(truth, events, 0.05) }));
