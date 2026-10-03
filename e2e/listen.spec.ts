@@ -30,11 +30,25 @@ test('listen: options appear only in listen mode and the keys play along', async
   // No MIDI keyboard: no speaker option.
   await expect(page.getByRole('switch', { name: 'Keyboard speakers' })).toHaveCount(0);
 
+  // Count every key going down and coming back up (the gaps between notes are too short to sample).
+  await page.evaluate(() => {
+    const moves = { down: 0, up: 0 };
+    (window as unknown as { __keyMoves: typeof moves }).__keyMoves = moves;
+    new MutationObserver((records) => {
+      for (const r of records) {
+        const el = r.target as HTMLElement;
+        const was = (r.oldValue ?? '').split(' ').includes('down');
+        const is = el.classList.contains('down');
+        if (!was && is) moves.down++;
+        if (was && !is) moves.up++;
+      }
+    }).observe(document.querySelector('.keyboard')!, { subtree: true, attributeFilter: ['class'], attributeOldValue: true });
+  });
   await page.getByRole('button', { name: /Start/ }).click();
   await expect(page.locator('.keyboard .key.down').first()).toBeVisible();
-  // Keys come back up between notes, so not every sampled moment has a key down.
-  await expect.poll(() => page.locator('.keyboard .key.down').count()).toBe(0);
-  await expect.poll(() => page.locator('.keyboard .key.down').count()).toBeGreaterThan(0);
+  const moves = () => page.evaluate(() => (window as unknown as { __keyMoves: { down: number; up: number } }).__keyMoves);
+  await expect.poll(async () => (await moves()).up, { timeout: 10_000 }).toBeGreaterThanOrEqual(3);
+  expect((await moves()).down).toBeGreaterThanOrEqual(3);
 
   await animate.click();
   await expect(animate).toHaveAttribute('aria-checked', 'false');
