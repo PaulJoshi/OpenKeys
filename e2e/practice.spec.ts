@@ -68,3 +68,18 @@ test('play-along: timing, a wrong note and a missed note are graded', async ({ p
   await expect(results).toContainText('Wrong note 1');
   await expect(results).toContainText('Trouble spots');
 });
+
+test('the nav hides while a piece is open and comes back at the top edge', async ({ page }) => {
+  await openOdeRH(page);
+  const nav = page.locator('header.nav');
+  await page.mouse.move(400, 400);
+  await expect.poll(() => nav.evaluate((e) => e.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0);
+  await page.mouse.move(400, 1);
+  await expect.poll(() => nav.evaluate((e) => e.getBoundingClientRect().top)).toBe(0);
+  await page.mouse.move(400, 500, { steps: 4 });
+  await expect.poll(() => nav.evaluate((e) => e.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0);
+  // Every practice control fits on one line at desktop width.
+  const tb = await page.locator('.toolbar').evaluate((e) => ({ h: e.offsetHeight, over: e.scrollWidth - e.clientWidth }));
+  expect(tb.h).toBeLessThan(56);
+  expect(tb.over).toBe(0);
+});

@@ -24,6 +24,8 @@ interface AppState {
   pianoProgress: number; // 0-1
   calibrationOpen: boolean;
   quickCheckOpen: boolean;
+  /** Top navigation revealed while it auto-hides (practice screen with a piece open). */
+  navOpen: boolean;
   /** "Practise this" request for the practice screen (loop drill on a range). */
   pendingDrill: { start: number; end: number; tempo: number; reviewId?: string } | null;
   /** Settings the practice screen applies when it opens (lessons, drills). */
@@ -52,10 +54,11 @@ export const useApp = create<AppState>((set, get) => ({
   pianoProgress: 0,
   calibrationOpen: false,
   quickCheckOpen: false,
+  navOpen: false,
   pendingDrill: null,
   pendingImport: null,
   practicePreset: null,
-  go: (screen) => set({ screen }),
+  go: (screen) => set({ screen, navOpen: false }),
   setScore: (score, lessonId = null) => set({ score, lessonId }),
   updateSettings: (patch) => {
     const settings = { ...get().settings, ...patch };

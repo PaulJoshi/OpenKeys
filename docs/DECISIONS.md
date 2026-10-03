@@ -117,3 +117,10 @@ frustrating feedback**. This file records those choices and why.
     extensions the system doesn't cover: a dark theme built by inverting its neutrals (ink canvas, charcoal
     stage, white text), and the left hand drawn in the soft purple accent so it stays distinct from the
     blue "play this" right hand and the green/red verdict colours.
+35. **Practice gives the score the height.** With a piece open, the toolbar is one line of button groups
+    (mode, hands, tempo + metronome, view) and the top nav slides away. It comes back when the mouse reaches the
+    top edge, on a swipe down from the top, from the toolbar's menu button on touch screens, or on keyboard
+    focus. Below 1000 px wide the toolbar wraps to two short lines rather than hiding controls off-screen.
+36. **Note names on the sheet are hand-coloured pills** (blue right hand, soft purple left hand, as on the
+    keyboard and falling notes) in a row under each staff, so they never read as part of the black engraving
+    (or its inverted dark version). Chords stack in pitch order, and the engraving reserves room for the row.

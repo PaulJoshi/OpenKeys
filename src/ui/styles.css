@@ -248,6 +248,28 @@ h3 {
   gap: var(--space-sm);
 }
 
+/*
+ * Practice with a piece open: the nav slides up out of the way and comes back when the mouse
+ * reaches the top edge, on a swipe down from the top, from the toolbar's menu button (touch),
+ * or when it takes keyboard focus.
+ */
+.app.immersive {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.app.immersive .nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%);
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.app.immersive.nav-open .nav,
+.app.immersive .nav:has(:focus-visible) {
+  transform: none;
+}
+
 .main {
   overflow: auto;
   min-width: 0;
@@ -730,14 +752,132 @@ input[type='range'],
   min-height: 0;
 }
 
+/*
+ * Practice toolbar: one compact line of button groups so the sheet and notes get the height.
+ * Each group is a soft-cloud pill track; the chosen option inverts to ink (selected = full inversion).
+ * Start is the view's one ink pill; it collapses to soft cloud while a take runs.
+ */
 .toolbar {
   display: flex;
   gap: var(--space-md);
   align-items: center;
-  flex-wrap: wrap;
-  padding: var(--space-md) var(--space-xl);
+  flex-wrap: nowrap;
+  padding: var(--space-sm) var(--space-xl);
   box-shadow: var(--elevation-inset);
   background: var(--surface-canvas);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.toolbar > * {
+  flex: none;
+}
+
+.toolbar > .grow {
+  flex: 1;
+}
+
+.toolbar .btn.start {
+  min-height: 32px;
+  padding: var(--space-xs) var(--space-lg) var(--space-xs) var(--space-md);
+}
+
+.toolbar .group {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+  padding: var(--space-xxs);
+  border-radius: var(--radius-button);
+  background: var(--surface-soft);
+}
+
+.toolbar .group button {
+  min-height: 28px;
+  padding: 0 var(--space-md);
+  border: 0;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--type-button-sm-size);
+  line-height: var(--type-button-sm-lh);
+}
+
+.toolbar .group button[aria-pressed='true'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.toolbar .group button:disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.toolbar .group button[aria-pressed='true']:disabled {
+  background: var(--text-tertiary);
+  color: var(--color-on-primary);
+}
+
+.toolbar .tempo {
+  gap: var(--space-sm);
+  padding-left: var(--space-md);
+}
+
+.toolbar .tempo label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.toolbar .tempo input[type='range'] {
+  width: 96px;
+  margin: 0;
+}
+
+.toolbar .tempo-value {
+  min-width: 4ch;
+  font-size: var(--type-button-sm-size);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.toolbar .tempo .metronome {
+  width: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar .tempo .pulse-dot {
+  margin-right: var(--space-sm);
+}
+
+.toolbar .icon-btn {
+  width: 32px;
+  height: 32px;
+}
+
+/* The menu handle is for touch screens, where there is no pointer to bring the nav down. */
+.toolbar .nav-handle {
+  display: none;
+}
+
+.app.immersive .toolbar .nav-handle {
+  display: inline-flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app.immersive .toolbar .nav-handle {
+    display: none;
+  }
+}
+
+@media (hover: none) {
+  .toolbar .shortcuts {
+    display: none;
+  }
 }
 
 .stage {
@@ -748,19 +888,41 @@ input[type='range'],
   overflow: hidden;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1279px) {
   .toolbar {
     padding: var(--space-sm) var(--space-lg);
     gap: var(--space-sm);
   }
-  .toolbar .seg {
-    gap: var(--space-xs);
+  .toolbar .group button {
+    padding: 0 10px;
   }
-  .toolbar .seg button,
-  .toolbar .btn {
-    min-height: 32px;
-    padding: var(--space-xs) var(--space-md);
-    font-size: var(--type-button-sm-size);
+  .toolbar .tempo input[type='range'] {
+    width: 72px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .toolbar {
+    gap: 6px;
+    padding: var(--space-sm) var(--space-md);
+  }
+  .toolbar .group button {
+    padding: 0 var(--space-sm);
+  }
+  .toolbar .tempo {
+    padding-left: var(--space-sm);
+  }
+  .toolbar .tempo input[type='range'] {
+    width: 60px;
+  }
+}
+
+/* Portrait tablets and phones: keep every control reachable on two short lines. */
+@media (max-width: 1000px) {
+  .toolbar {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    overflow-x: visible;
   }
 }
 
@@ -1110,12 +1272,6 @@ kbd {
 
 /* Landscape phones / small tablets: give the practice screen the whole height. */
 @media (max-height: 540px) and (orientation: landscape) {
-  .app.practicing {
-    grid-template-rows: 1fr;
-  }
-  .app.practicing .nav {
-    display: none;
-  }
   .toolbar {
     padding: var(--space-xs) var(--space-sm);
     gap: 6px;

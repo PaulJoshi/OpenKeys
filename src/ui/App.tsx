@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useApp, type Screen } from './store';
 import { runtime } from './runtime';
 import { registerPwa } from './pwa';
@@ -41,6 +41,10 @@ export function App() {
   const setApp = useApp((s) => s.set);
   const debug = useApp((s) => s.settings.debug) || new URLSearchParams(location.search).has('debug');
   const [dragging, setDragging] = useState(false);
+  // Practice with a piece open hides the nav to give the sheet music the height.
+  const immersive = useApp((s) => s.screen === 'practice' && !!s.score);
+  const navOpen = useApp((s) => s.navOpen);
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     void loadSettings();
@@ -80,6 +84,61 @@ export function App() {
     };
   }, []);
 
+  // Auto-hiding nav: the mouse at the top edge or a swipe down from the top brings it back.
+  useEffect(() => {
+    if (!immersive) {
+      setApp({ navOpen: false });
+      return;
+    }
+    const open = (v: boolean) => {
+      if (useApp.getState().navOpen !== v) setApp({ navOpen: v });
+    };
+    const inNav = (t: EventTarget | null) => !!navRef.current && t instanceof Node && navRef.current.contains(t);
+    const move = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      if (e.clientY <= 8) open(true);
+      else if (useApp.getState().navOpen && !inNav(e.target)) {
+        const bottom = navRef.current?.getBoundingClientRect().bottom ?? 0;
+        if (e.clientY > bottom + 24) open(false);
+      }
+    };
+    const leave = (e: MouseEvent) => {
+      if (e.clientY <= 0) open(true);
+    };
+    const down = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse' && !inNav(e.target) && !(e.target as Element | null)?.closest?.('.nav-handle')) open(false);
+    };
+    let swipeY: number | null = null;
+    const touchStart = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY ?? Infinity;
+      swipeY = e.touches.length === 1 && y < 32 ? y : null;
+    };
+    const touchMove = (e: TouchEvent) => {
+      if (swipeY === null) return;
+      if ((e.touches[0]?.clientY ?? 0) - swipeY > 30) {
+        swipeY = null;
+        open(true);
+      }
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') open(false);
+    };
+    window.addEventListener('pointermove', move);
+    document.documentElement.addEventListener('mouseleave', leave);
+    window.addEventListener('pointerdown', down);
+    window.addEventListener('touchstart', touchStart, { passive: true });
+    window.addEventListener('touchmove', touchMove, { passive: true });
+    window.addEventListener('keydown', key);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      document.documentElement.removeEventListener('mouseleave', leave);
+      window.removeEventListener('pointerdown', down);
+      window.removeEventListener('touchstart', touchStart);
+      window.removeEventListener('touchmove', touchMove);
+      window.removeEventListener('keydown', key);
+    };
+  }, [immersive, setApp]);
+
   // Drag-and-drop import anywhere.
   useEffect(() => {
     let depth = 0;
@@ -118,11 +177,11 @@ export function App() {
   const render = screens[screen] ?? (screen === 'free' ? () => <FreePlay /> : null);
 
   return (
-    <div className={`app${screen === 'practice' ? ' practicing' : ''}`}>
+    <div className={`app${screen === 'practice' ? ' practicing' : ''}${immersive ? ' immersive' : ''}${immersive && navOpen ? ' nav-open' : ''}`}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <header className="nav">
+      <header className="nav" ref={navRef}>
         <div className="brand">OpenKeys</div>
         <nav className="nav-links" aria-label="Main">
           {NAV.map((n) => (

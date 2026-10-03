@@ -25,6 +25,12 @@ async function playPerfectly(page: Page, mode: 'wait' | 'playalong') {
   }, mode);
 }
 
+/** The practice screen hides the nav; bring it down from the top edge like a mouse user would. */
+async function nav(page: Page, name: RegExp) {
+  await page.mouse.move(400, 1);
+  await page.getByRole('button', { name }).first().click();
+}
+
 test('a new user completes lessons 1 to 3 with tracked progress', async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto('/');
@@ -35,7 +41,7 @@ test('a new user completes lessons 1 to 3 with tracked progress', async ({ page 
     [2, 'wait'],
     [3, 'playalong'],
   ] as const) {
-    await page.getByRole('button', { name: /Course/ }).first().click();
+    await nav(page, /Course/);
     const node = page.locator('.lesson-node', { hasText: `${n}.` }).first();
     await expect(node).toContainText('Next');
     await node.getByRole('button').click();
@@ -47,10 +53,10 @@ test('a new user completes lessons 1 to 3 with tracked progress', async ({ page 
     await expect(results).toBeVisible({ timeout: 20_000 });
     await expect(results).toContainText('Excellent');
   }
-  await page.getByRole('button', { name: /Course/ }).first().click();
+  await nav(page, /Course/);
   await expect(page.locator('.lesson-node', { hasText: '4.' }).first()).toContainText('Next');
   await expect(page.locator('.lesson-node.done')).toHaveCount(3);
-  await page.getByRole('button', { name: /Progress/ }).first().click();
+  await nav(page, /Progress/);
   await expect(page.getByText('takes logged')).toBeVisible();
   await expect(page.locator('.big-number').nth(3)).toHaveText('3');
 });
