@@ -27,9 +27,9 @@ function useMidiOutputs(): string[] {
   return names;
 }
 
-function Switch({ on, label, title, onChange }: { on: boolean; label: string; title: string; onChange: (on: boolean) => void }) {
+function Switch({ on, label, title, disabled, onChange }: { on: boolean; label: string; title: string; disabled?: boolean; onChange: (on: boolean) => void }) {
   return (
-    <button type="button" role="switch" aria-checked={on} className="switch" title={title} onClick={() => onChange(!on)}>
+    <button type="button" role="switch" aria-checked={on} className="switch" title={title} disabled={disabled} onClick={() => onChange(!on)}>
       {label}
       <span className="switch-track" aria-hidden="true">
         <span className="switch-knob" />
@@ -104,6 +104,13 @@ export function ListenOptions() {
               update({ listenKeyAnimation: on });
               if (!on) liveKeys.clearPlaying();
             }}
+          />
+          <Switch
+            on={settings.listenHandColours}
+            label="Hand colours"
+            title="Light the keys blue for the right hand and purple for the left"
+            disabled={!settings.listenKeyAnimation}
+            onChange={(on) => update({ listenHandColours: on })}
           />
         </div>
       )}

@@ -210,7 +210,7 @@ class PracticeController {
         practiceLive.changed();
       }),
     );
-    if (opts.mode === 'listen') this.unsubs.push(engine.player.scheduled.on((n) => this.animateKey(n.midi, n.time, n.upTime)));
+    if (opts.mode === 'listen') this.unsubs.push(engine.player.scheduled.on((n) => this.animateKey(n.midi, n.hand, n.time, n.upTime)));
     session.start();
     practiceLive.running = true;
     this.stateChange.emit(session.state);
@@ -226,7 +226,7 @@ class PracticeController {
   }
 
   /** Listen mode: presses the on-screen key when the note is heard and lifts it when it ends. */
-  private animateKey(midi: number, time: number, upTime: number) {
+  private animateKey(midi: number, hand: Hand, time: number, upTime: number) {
     const engine = runtime.engine;
     if (!engine || !getSettings().listenKeyAnimation) return;
     const token = ++this.keyToken;
@@ -243,7 +243,8 @@ class PracticeController {
       this.keyTimers.add(id);
     };
     at(down, () => {
-      if (getSettings().listenKeyAnimation) liveKeys.playOn(midi, token);
+      const s = getSettings();
+      if (s.listenKeyAnimation) liveKeys.playOn(midi, token, s.listenHandColours ? hand : null);
     });
     at(up, () => liveKeys.playOff(midi, token));
   }

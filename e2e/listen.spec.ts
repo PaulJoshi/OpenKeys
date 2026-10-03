@@ -39,27 +39,39 @@ test('listen: options appear only in listen mode and the keys play along', async
     new MutationObserver((records) => {
       for (const r of records) {
         const el = r.target as HTMLElement;
-        const was = (r.oldValue ?? '').split(' ').includes('down');
-        const is = el.classList.contains('down');
+        const lit = (c: string[]) => c.some((x) => x === 'down' || x === 'play-R' || x === 'play-L');
+        const was = lit((r.oldValue ?? '').split(' '));
+        const is = lit([...el.classList]);
         if (!was && is) moves.down++;
         if (was && !is) moves.up++;
       }
     }).observe(document.querySelector('.keyboard')!, { subtree: true, attributeFilter: ['class'], attributeOldValue: true });
   });
   await page.getByRole('button', { name: /Start/ }).click();
-  await expect(page.locator('.keyboard .key.down').first()).toBeVisible();
   const moves = () => page.evaluate(() => (window as unknown as { __keyMoves: { down: number; up: number } }).__keyMoves);
   await expect.poll(async () => (await moves()).up, { timeout: 10_000 }).toBeGreaterThanOrEqual(3);
   expect((await moves()).down).toBeGreaterThanOrEqual(3);
 
+  // Hand colours (on by default): Ode to Joy's right hand lights blue, never the neutral pressed look.
+  await expect(page.locator('.keyboard .key.play-R').first()).toBeVisible();
+  expect(await page.locator('.keyboard .key.down, .keyboard .key.play-L').count()).toBe(0);
+
   // Clicking Start closed the menu; open it again while the piece plays.
   await expect(animate).toHaveCount(0);
   await menu.click();
+  const colours = page.getByRole('switch', { name: 'Hand colours' });
+  await colours.click();
+  await expect(colours).toHaveAttribute('aria-checked', 'false');
+  await expect(page.locator('.keyboard .key.down').first()).toBeVisible();
+  await expect(page.locator('.keyboard .key.play-R')).toHaveCount(0);
+
   await animate.click();
+  await expect(colours).toBeDisabled();
   await expect(animate).toHaveAttribute('aria-checked', 'false');
-  await expect(page.locator('.keyboard .key.down')).toHaveCount(0);
+  const lit = page.locator('.keyboard .key.down, .keyboard .key.play-R, .keyboard .key.play-L');
+  await expect(lit).toHaveCount(0);
   await page.waitForTimeout(1500);
-  await expect(page.locator('.keyboard .key.down')).toHaveCount(0);
+  await expect(lit).toHaveCount(0);
   await page.getByRole('button', { name: /Stop/ }).click();
 });
 
@@ -79,6 +91,6 @@ test('listen: plays through the MIDI keyboard speakers when one is connected', a
   await page.getByRole('button', { name: /Start/ }).click();
   // E4 (64) is the first note of Ode to Joy.
   await expect.poll(() => page.evaluate(() => (window as unknown as { __midiSent: number[][] }).__midiSent.some((b) => b[0] === 0x90 && b[1] === 64))).toBe(true);
-  await expect(page.locator('.keyboard .key.down').first()).toBeVisible();
+  await expect(page.locator('.keyboard .key.play-R').first()).toBeVisible();
   await page.getByRole('button', { name: /Stop/ }).click();
 });

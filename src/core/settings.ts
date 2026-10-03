@@ -42,6 +42,8 @@ export interface Settings {
   errorSound: boolean;
   /** Listen mode: the on-screen keys go down and up with the notes the app plays. */
   listenKeyAnimation: boolean;
+  /** Listen mode: animated keys take their hand's colour (blue right, purple left). */
+  listenHandColours: boolean;
   splitPoint: number;
   detector: DetectorParams;
   debug: boolean;
@@ -79,6 +81,7 @@ export const DEFAULT_SETTINGS: Settings = {
   micAllowSpeakerPlayback: false,
   errorSound: false,
   listenKeyAnimation: true,
+  listenHandColours: true,
   splitPoint: 60,
   detector: DEFAULT_DETECTOR_PARAMS,
   debug: false,

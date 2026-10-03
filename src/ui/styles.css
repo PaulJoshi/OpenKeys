@@ -750,6 +750,20 @@ input[type='range'],
   background: var(--ok-red);
   color: var(--ok-white);
 }
+/* Listen mode with hand colours: the key the app plays dips in its hand's colour. */
+.key.play-R,
+.key.play-L {
+  transform: scaleY(0.98);
+  transition-duration: var(--duration-fast);
+}
+.key.play-R {
+  background: var(--hand-r);
+  color: var(--ok-white);
+}
+.key.play-L {
+  background: var(--hand-l);
+  color: var(--ok-ink);
+}
 .key.middle-c::after {
   content: '';
   position: absolute;
@@ -1115,7 +1129,16 @@ input[type='range'],
     opacity var(--duration-base) var(--ease-standard);
 }
 
-.switch:active {
+.switch:disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.switch:disabled .switch-track {
+  opacity: 0.5;
+}
+
+.switch:active:not(:disabled) {
   transform: scale(var(--press-scale));
   opacity: var(--press-opacity);
 }
@@ -1389,7 +1412,9 @@ kbd {
   .key.hit,
   .key.wrong,
   .key.up-R,
-  .key.up-L {
+  .key.up-L,
+  .key.play-R,
+  .key.play-L {
     outline: 3px solid Highlight;
   }
   .btn.primary,
