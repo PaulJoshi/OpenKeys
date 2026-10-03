@@ -1,6 +1,7 @@
 import type { Score } from '../types';
 import { BUILT_IN_SONGS, SONG_LICENSE, type BuiltInSong } from '../content/songs';
 import { parseAbc } from '../score/abc';
+import { parseMusicXml } from '../score/musicxml';
 import { estimateDifficulty } from '../score/difficulty';
 import { getDb, type StoredScore } from './db';
 
@@ -18,9 +19,11 @@ export function builtInScore(song: BuiltInSong, variant: Variant): Score {
   const id = builtInId(song.id, variant);
   const hit = cache.get(id);
   if (hit) return hit;
+  const xml = variant === 'full' ? song.fullMusicXml : undefined;
   const abc = variant === 'full' && song.full ? song.full : song.easy;
-  const base = parseAbc(abc, { id });
-  let score: Score = { ...base, id, title: song.title, composer: song.composer, license: SONG_LICENSE, tags: ['built-in', ...song.tags], pieceId: song.id, variant: VARIANT_LABEL[variant] };
+  const base = xml ? parseMusicXml(xml) : parseAbc(abc, { id });
+  const license = xml ? song.fullLicense ?? SONG_LICENSE : SONG_LICENSE;
+  let score: Score = { ...base, id, title: song.title, composer: song.composer, license, tags: ['built-in', ...song.tags], pieceId: song.id, variant: VARIANT_LABEL[variant] };
   if (variant === 'R') {
     const notes = score.notes.filter((n) => n.hand === 'R');
     score = { ...score, notes, abc: undefined };
@@ -30,7 +33,7 @@ export function builtInScore(song: BuiltInSong, variant: Variant): Score {
 }
 
 export function builtInVariants(song: BuiltInSong): Variant[] {
-  return song.full ? ['R', 'easy', 'full'] : ['R', 'easy'];
+  return song.full || song.fullMusicXml ? ['R', 'easy', 'full'] : ['R', 'easy'];
 }
 
 export interface LibraryEntry {

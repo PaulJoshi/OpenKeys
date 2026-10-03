@@ -40,7 +40,9 @@ not by feel; the most important number is the **false-wrong rate**.
 
 Only public-domain compositions, arranged by you (or by the project) and contributed under CC0. Add the ABC to
 `src/core/content/songs.ts`; `tests/score/songs.test.ts` checks that it parses, both hands line up and the
-range fits a 61-key keyboard. Never add files downloaded from score-sharing sites.
+range fits a 61-key keyboard. Never add files downloaded from score-sharing sites unless a maintainer has
+confirmed the file is free to use; such a file goes in `src/core/content/scores/` as a song's `fullMusicXml`,
+credited in `fullLicense` and `CREDITS.md`.
 
 ## Adding real-instrument test data
 

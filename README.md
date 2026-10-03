@@ -27,8 +27,9 @@ No account, no server, no tracking: **audio never leaves your device.** It insta
 - **Your music**: import **MusicXML / MXL** (e.g. exported from MuseScore), **MIDI**, **ABC** and `.openkeys.json`
   by drag-and-drop. Repeats, voltas and D.C./D.S. are unrolled for judging while the sheet keeps its written layout.
   Write your own exercises in the built-in **ABC script editor**.
-- **15 built-in pieces** (public-domain compositions arranged by the project): Ode to Joy, Für Elise (opening),
-  Bach's Prelude in C, Gymnopédie No. 1, Minuet in G, Canon in D, Greensleeves and more, each in graded versions.
+- **15 built-in pieces** (public-domain compositions, mostly arranged by the project): Ode to Joy, Für Elise
+  (the opening, plus the complete piece with fingering), Bach's Prelude in C, Gymnopédie No. 1, Minuet in G,
+  Canon in D, Greensleeves and more, each in graded versions.
 - **Free play** with a live piano roll; record a take and transcribe it, chords included, with Spotify's
   **Basic Pitch** running locally; save it as a score or download MIDI.
 

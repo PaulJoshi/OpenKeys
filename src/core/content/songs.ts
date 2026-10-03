@@ -1,8 +1,11 @@
+import furEliseFullXml from './scores/fur-elise-full.musicxml?raw';
+
 /**
  * Built-in songs: compositions in the public domain, arranged by the OpenKeys project
  * (arrangements released under CC0 / MIT with the code). Written in ABC; graded versions:
  * "Right hand" (derived), "Easy" (two hands, simple left hand) and sometimes "Full".
- * Never add files downloaded from score-sharing sites here.
+ * A full version can instead be a bundled MusicXML score (`fullMusicXml`), but only one the
+ * maintainers have confirmed is free to use; credit it in `fullLicense` and CREDITS.md.
  */
 export interface BuiltInSong {
   id: string;
@@ -12,6 +15,10 @@ export interface BuiltInSong {
   blurb: string;
   easy: string;
   full?: string;
+  /** Full version as MusicXML, used instead of `full` (keeps the score's own layout and fingering). */
+  fullMusicXml?: string;
+  /** Licence line for the MusicXML full version, which is not an OpenKeys arrangement. */
+  fullLicense?: string;
   tags: string[];
 }
 
@@ -141,13 +148,15 @@ export const BUILT_IN_SONGS: BuiltInSong[] = [
   },
   {
     id: 'furElise',
-    title: 'Für Elise (opening)',
+    title: 'Für Elise',
     composer: 'Ludwig van Beethoven',
-    blurb: 'The famous E–D♯ turn; hands alternate.',
+    blurb: 'Easy is the opening, hands alternating. Full is the whole piece, fingered.',
     tags: ['intermediate', 'A minor', '3/8'],
     easy: H('Für Elise (opening)', 'C:Ludwig van Beethoven\nM:3/8\nL:1/16\nQ:3/8=40\nK:Am\n') +
       `V:1 clef=treble\n!pp!e^d | e^d e B =d c | A2 z C E A | B2 z E ^G B | c2 z E e^d | e^d e B =d c | A2 z C E A | B2 z E c B | A6 |]\n` +
       `V:2 clef=bass\nz2 | z6 | A,,E,A, z3 | E,,E,^G, z3 | A,,E,A, z3 | z6 | A,,E,A, z3 | E,,E,^G, z3 | [A,,E,A,]6 |]\n`,
+    fullMusicXml: furEliseFullXml,
+    fullLicense: 'Public-domain composition; arrangement by Verona (pianolessenassen.nl), free to use',
   },
   {
     id: 'preludeC',
