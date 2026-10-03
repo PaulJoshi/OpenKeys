@@ -35,4 +35,16 @@ describe('bundled MusicXML full versions', () => {
     expect(s.measures.length).toBeGreaterThan(100);
     expect(s.notes.filter((n) => n.finger).length).toBeGreaterThan(100);
   });
+
+  it('Gymnopédie No. 1 has all 78 bars, fingered and pedalled, with the chords in the left hand', () => {
+    const s = builtInScore(BUILT_IN_SONGS.find((x) => x.id === 'gymnopedie')!, 'full');
+    expect(s.measures.length).toBe(78);
+    expect(s.notes.filter((n) => n.finger).length).toBeGreaterThan(300);
+    expect(s.pedal?.length).toBeGreaterThan(100);
+    // Bar 1: low G and the B–D–F♯ chord are both left hand; the melody enters in bar 5.
+    const bar1 = s.notes.filter((n) => n.startBeat < 3).map((n) => [n.midi, n.hand]);
+    expect(bar1).toEqual(expect.arrayContaining([[43, 'L'], [59, 'L'], [62, 'L'], [66, 'L']]));
+    expect(bar1.every(([, h]) => h === 'L')).toBe(true);
+    expect(s.notes.find((n) => n.hand === 'R')?.midi).toBe(78);
+  });
 });
