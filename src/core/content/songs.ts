@@ -1,4 +1,5 @@
 import furEliseFullXml from './scores/fur-elise-full.musicxml?raw';
+import gymnopedieFullXml from './scores/gymnopedie-1-full.musicxml?raw';
 
 /**
  * Built-in songs: compositions in the public domain, arranged by the OpenKeys project
@@ -170,13 +171,15 @@ export const BUILT_IN_SONGS: BuiltInSong[] = [
   },
   {
     id: 'gymnopedie',
-    title: 'Gymnopédie No. 1 (opening)',
+    title: 'Gymnopédie No. 1',
     composer: 'Erik Satie',
-    blurb: 'Slow and calm; let the chords ring.',
+    blurb: 'Easy is the opening; let the chords ring. Full is the whole piece, fingered and pedalled.',
     tags: ['intermediate', 'D major', '3/4'],
     easy: H('Gymnopédie No. 1 (opening)', 'C:Erik Satie\nM:3/4\nL:1/4\nQ:1/4=72\nK:D\n') +
       `V:1 clef=treble\nz3 | z3 | z3 | z3 | !p!z f a | g f c | B c d | A3 | F3- | F3 | z f a | g f c | B c d | A3 | c3 | e3 |]\n` +
       `V:2 clef=bass\nG,, [B,DF]2 | D,, [A,CF]2 | G,, [B,DF]2 | D,, [A,CF]2 | G,, [B,DF]2 | D,, [A,CF]2 | G,, [B,DF]2 | D,, [A,CF]2 | G,, [B,DF]2 | D,, [A,CF]2 | G,, [B,DF]2 | D,, [A,CF]2 | G,, [B,DF]2 | D,, [A,CF]2 | G,, [B,DF]2 | D,, [A,CF]2 |]\n`,
+    fullMusicXml: gymnopedieFullXml,
+    fullLicense: 'Public-domain composition and Mutopia Project edition; fingering and pedalling © OpenKeys contributors, CC0',
   },
   {
     id: 'canon',

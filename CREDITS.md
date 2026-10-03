@@ -43,9 +43,14 @@
 ## Music
 
 The built-in songs are public-domain compositions (Beethoven, Bach, Petzold, Satie, Pachelbel, Pierpont and
-traditional melodies) **arranged by the OpenKeys project** and released under CC0, with one exception:
+traditional melodies) **arranged by the OpenKeys project** and released under CC0, with these exceptions:
 
 - **Für Elise, full version** (`src/core/content/scores/fur-elise-full.musicxml`): fingered arrangement by
   Verona ([pianolessenassen.nl/bladmuziek](https://pianolessenassen.nl/bladmuziek)), published on
   [MuseScore](https://musescore.com/user/2423821/scores/6647035). Added by the maintainer as free to use; the file
   is bundled unchanged and is not covered by the CC0 dedication above.
+- **Gymnopédie No. 1, full version** (`src/core/content/scores/gymnopedie-1-full.musicxml`): notes, dynamics,
+  hairpins and slurs from the [Mutopia Project](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=37) edition
+  typeset by Evin Robertson from the original (Mutopia-2014/12/14-37), placed in the public domain. OpenKeys wrote
+  it out in full as in Satie's original, moved the left-hand chords to the bass staff, and added fingering,
+  pedalling and a starting dynamic for the left hand; those additions are CC0.
