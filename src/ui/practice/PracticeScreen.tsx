@@ -22,6 +22,7 @@ import { ShortcutsHelp } from '../components/ShortcutsHelp';
 import { kvSet } from '../../core/progress/db';
 import { Icon } from '../components/Icon';
 import { ListenOptions } from './ListenOptions';
+import { SourceSwitch } from '../components/SourceSwitch';
 
 const MODES: { id: PracticeMode; label: string; hint: string }[] = [
   { id: 'listen', label: 'Listen', hint: 'Hear the piece; the cursor follows.' },
@@ -377,6 +378,7 @@ function Practice({ score }: { score: Score }) {
       <div className="bottom">
         <div className="row" style={{ marginBottom: compact ? 2 : 8 }}>
           {!compact && <InputMeter />}
+          <SourceSwitch disabled={running} />
           <div className="grow feedback-line" aria-live="polite">
             {line || (running ? '' : range ? modeHint : `${modeHint} Drag across bars to loop.`)}
           </div>

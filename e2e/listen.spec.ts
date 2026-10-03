@@ -94,3 +94,30 @@ test('listen: plays through the MIDI keyboard speakers when one is connected', a
   await expect(page.locator('.keyboard .key.play-R').first()).toBeVisible();
   await page.getByRole('button', { name: /Stop/ }).click();
 });
+
+test('the practice bar switches the input between computer keys, MIDI and microphone', async ({ page }) => {
+  await openOde(page, { inputSource: 'virtual' });
+  const input = page.getByRole('radiogroup', { name: 'Input' });
+  const meter = page.locator('.meter .detail');
+  await expect(input.getByRole('radio', { name: 'Computer keys' })).toHaveAttribute('aria-checked', 'true');
+  await expect(meter).toHaveText('Computer keys / on-screen piano');
+
+  await input.getByRole('radio', { name: 'MIDI keyboard' }).click();
+  await expect(input.getByRole('radio', { name: 'MIDI keyboard' })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('button', { name: 'Connect MIDI keyboard' })).toBeVisible();
+  await expect(meter).not.toHaveText('Computer keys / on-screen piano');
+
+  await input.getByRole('radio', { name: 'Microphone' }).click();
+  await expect(page.getByRole('button', { name: 'Turn on the microphone' })).toBeVisible();
+
+  await input.getByRole('radio', { name: 'Computer keys' }).click();
+  await expect(meter).toHaveText('Computer keys / on-screen piano');
+  await expect(page.getByRole('button', { name: 'Turn on the microphone' })).toHaveCount(0);
+
+  // Locked while a take runs.
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: /Start/ }).click();
+  await expect(input.getByRole('radio', { name: 'Microphone' })).toBeDisabled();
+  await page.getByRole('button', { name: /Stop/ }).click();
+  await expect(input.getByRole('radio', { name: 'Microphone' })).toBeEnabled();
+});
