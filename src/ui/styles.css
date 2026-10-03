@@ -1049,12 +1049,50 @@ input[type='range'],
   text-overflow: ellipsis;
 }
 
-/* Listen-mode options: pill switches beside the song name; on = ink track (selected = inversion). */
+/*
+ * Listen-mode options: a quiet settings button; its menu opens upwards as a square panel with
+ * one row per option. Switches are pill tracks; on = ink (selected = inversion).
+ */
 .listen-options {
+  position: relative;
   display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-sm);
+}
+
+.listen-options .icon-btn {
+  width: 32px;
+  height: 32px;
+  color: var(--text-secondary);
+}
+
+.listen-options .icon-btn[aria-expanded='true'] {
+  color: var(--text-primary);
+}
+
+.listen-menu {
+  position: absolute;
+  right: 0;
+  /* Clears the hairline above the keyboard panel so the menu reads as floating over the stage. */
+  bottom: calc(100% + var(--space-lg));
+  z-index: 30;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-sm);
+  background: var(--surface-canvas);
+  border: 1px solid var(--border-hairline);
+}
+
+.listen-menu-title {
+  padding: var(--space-xs) var(--space-md) var(--space-sm);
+  font-size: var(--type-caption-sm-size);
+  line-height: var(--type-caption-sm-lh);
+  color: var(--text-secondary);
+}
+
+.listen-menu .switch {
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
 }
 
 .switch {
