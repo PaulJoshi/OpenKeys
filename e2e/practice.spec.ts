@@ -79,7 +79,7 @@ test('the nav hides while a piece is open and comes back at the top edge', async
   await page.mouse.move(400, 500, { steps: 4 });
   await expect.poll(() => nav.evaluate((e) => e.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0);
   // Every practice control fits on one line at desktop width.
-  const tb = await page.locator('.toolbar').evaluate((e) => ({ h: e.offsetHeight, over: e.scrollWidth - e.clientWidth }));
+  const tb = await page.locator('.toolbar').evaluate((e) => ({ h: (e as HTMLElement).offsetHeight, over: e.scrollWidth - e.clientWidth }));
   expect(tb.h).toBeLessThan(56);
   expect(tb.over).toBe(0);
 });
