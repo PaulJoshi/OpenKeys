@@ -30,7 +30,14 @@ class LiveKeys {
   }
 
   press(midi: number, mark: KeyMark = 'down') {
-    this.pressed.set(midi, mark);
+    // A held key stays lit until it is released, keeping any verdict the judge already gave it.
+    const flash = this.flashTimers.get(midi);
+    if (flash) {
+      clearTimeout(flash);
+      this.flashTimers.delete(midi);
+    }
+    const prev = this.pressed.get(midi);
+    this.pressed.set(midi, mark === 'down' && prev && prev !== 'down' ? prev : mark);
     this.changed();
   }
 

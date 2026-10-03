@@ -83,3 +83,30 @@ test('the nav hides while a piece is open and comes back at the top edge', async
   expect(tb.h).toBeLessThan(56);
   expect(tb.over).toBe(0);
 });
+
+test('the sheet fits the screen width and keys stay lit while held', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 700 });
+  await openOdeRH(page);
+  const sheet = page.locator('.sheet-wrap');
+  await expect(sheet.locator('.osmd-host svg')).toBeVisible();
+  // No sideways scroll and no scrollbar taking width, also after a small resize.
+  const fits = () => sheet.evaluate((e) => ({ over: e.scrollWidth - e.clientWidth, bar: (e as HTMLElement).offsetWidth - e.clientWidth }));
+  expect(await fits()).toEqual({ over: 0, bar: 0 });
+  await page.setViewportSize({ width: 884, height: 700 });
+  await expect.poll(async () => (await fits()).over).toBe(0);
+
+  const e4 = page.getByRole('group', { name: /Piano keyboard/ }).getByLabel('E4', { exact: true });
+  await page.keyboard.down('KeyD');
+  await expect(e4).toHaveClass(/\bdown\b/);
+  await page.keyboard.up('KeyD');
+  await expect(e4).not.toHaveClass(/\bdown\b/);
+  // In a take the held right note turns green and stays lit until released.
+  await page.getByRole('button', { name: 'Wait', exact: true }).click();
+  await page.getByRole('button', { name: /Start/ }).click();
+  await page.keyboard.down('KeyD');
+  await expect(e4).toHaveClass(/\bhit\b/);
+  await page.waitForTimeout(500);
+  await expect(e4).toHaveClass(/\bhit\b/);
+  await page.keyboard.up('KeyD');
+  await expect(e4).not.toHaveClass(/\bhit\b/);
+});

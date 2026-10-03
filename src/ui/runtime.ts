@@ -39,8 +39,6 @@ class Runtime {
   readonly virtual = new VirtualInput(proxyClock);
   private plugins = new Map<InputSource, InputPlugin>();
   private unsubs = new Map<InputSource, () => void>();
-  /** Set by the practice session to intercept judged feedback for key colours. */
-  judgeHighlights = false;
   mic: MicInput | null = null;
   midi: MidiInput | null = null;
   readonly midiStatus = new Emitter<string>();
@@ -257,10 +255,9 @@ class Runtime {
       if (eng && (e.source === 'virtual' || (e.source === 'midi' && s.monitorMidi))) {
         eng.piano.noteOn(e.midi, e.velocity ?? 0.7, Math.max(eng.now(), e.time));
       }
-      if (!this.judgeHighlights) {
-        if (e.source === 'mic') liveKeys.flash(e.midi, 'down', 300);
-        else liveKeys.press(e.midi, 'down');
-      }
+      // Keys light up with MIDI and computer-key/on-screen input (the judge then turns them green
+      // or red). Raw mic detections do not: the microphone picks up too much noise as notes.
+      if (e.source !== 'mic') liveKeys.press(e.midi, 'down');
       meter.set({
         ...meter.value,
         source: e.source,
