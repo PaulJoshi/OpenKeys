@@ -27,14 +27,74 @@ interface StepInfo extends OsmdStep {
 
 const EPS = 1e-4;
 
-/** Most notes struck together by one hand (how many name pills can stack under a staff). */
-function maxChordSize(score: Score): number {
-  const counts = new Map<string, number>();
-  for (const n of score.notes) {
-    const k = `${n.hand === 'L' ? 'L' : 'R'}${n.startBeat.toFixed(3)}`;
-    counts.set(k, (counts.get(k) ?? 0) + 1);
+/** Note-name pills under each staff: height, gap between stacked pills and offset below the notes (px). */
+const PILL_H = 15;
+const PILL_GAP = 2;
+const PILL_TOP = 6;
+/** Half the widest pill (px), so the reserved space covers the pills on either side of a notehead. */
+const PILL_HALF_W = 15;
+
+// The parts of OSMD's (untyped, internal) layout calculator that the pill spacing touches.
+type SkyBottom = { BottomLine: number[]; SamplingUnit: number };
+type CalcNote = { sourceNote: { isRest: () => boolean; NoteTie?: { StartNote: unknown } } };
+type CalcEntry = {
+  PositionAndShape: { RelativePosition: { x: number }; BorderLeft: number; BorderRight: number };
+  graphicalVoiceEntries: { notes: CalcNote[] }[];
+};
+type CalcStaffLine = { Measures: { PositionAndShape: { RelativePosition: { x: number } }; staffEntries: CalcEntry[] }[]; SkyBottomLineCalculator: SkyBottom };
+type Calc = { musicSystems: { StaffLines: CalcStaffLine[] }[]; calculateSkyBottomLines: () => void; calculateLyricsPosition: () => void };
+
+/** Notes that get a name pill in a staff entry (rests and tied continuations get none). */
+function pillCount(e: CalcEntry): number {
+  let n = 0;
+  for (const ve of e.graphicalVoiceEntries) {
+    for (const g of ve.notes) {
+      const src = g.sourceNote;
+      if (!src.isRest() && (!src.NoteTie || src.NoteTie.StartNote === src)) n++;
+    }
   }
-  return Math.max(1, ...counts.values());
+  return n;
+}
+
+/**
+ * Makes OSMD leave room for the note-name pills only where they are drawn. Once the notes are
+ * engraved, each staff line remembers how low its notes reach (where the pills start); after the
+ * fingerings, dynamics and pedal marks are placed, its bottom line is lowered under every chord by
+ * that chord's stack of pills. The gap below a staff then grows with the chords in that system,
+ * not with the biggest chord anywhere in the piece.
+ */
+function reservePillSpace(osmd: OSMDType, pillBase: WeakMap<object, number>) {
+  const calc = osmd.GraphicSheet.GetCalculator as unknown as Calc;
+  const skyLines = calc.calculateSkyBottomLines.bind(calc);
+  calc.calculateSkyBottomLines = () => {
+    skyLines();
+    for (const sys of calc.musicSystems) {
+      for (const line of sys.StaffLines) pillBase.set(line, line.SkyBottomLineCalculator.BottomLine.reduce((a, b) => Math.max(a, b), 4));
+    }
+  };
+  const lyrics = calc.calculateLyricsPosition.bind(calc);
+  calc.calculateLyricsPosition = () => {
+    lyrics();
+    const unit = 10 * osmd.zoom;
+    for (const sys of calc.musicSystems) {
+      for (const line of sys.StaffLines) {
+        const top = (pillBase.get(line) ?? 4) + PILL_TOP / unit;
+        const { BottomLine: bottom, SamplingUnit: per } = line.SkyBottomLineCalculator;
+        for (const m of line.Measures) {
+          for (const e of m.staffEntries) {
+            const rows = pillCount(e);
+            if (!rows) continue;
+            const x = m.PositionAndShape.RelativePosition.x + e.PositionAndShape.RelativePosition.x;
+            const half = PILL_HALF_W / unit;
+            const from = Math.max(0, Math.floor((x + e.PositionAndShape.BorderLeft - half) * per));
+            const to = Math.min(bottom.length - 1, Math.ceil((x + e.PositionAndShape.BorderRight + half) * per));
+            const reach = top + (rows * (PILL_H + PILL_GAP)) / unit;
+            for (let i = from; i <= to; i++) bottom[i] = Math.max(bottom[i], reach);
+          }
+        }
+      }
+    }
+  };
 }
 
 /**
@@ -56,6 +116,8 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
   const [error, setError] = useState('');
   const [renderGen, setRenderGen] = useState(0);
   const dragStart = useRef<number | null>(null);
+  /** How low each OSMD staff line's notes reach (staff units); the name pills hang below it. */
+  const pillBase = useRef(new WeakMap<object, number>());
   const namesShown = noteNameOpacity > 0.02;
 
   // Load + render.
@@ -81,15 +143,9 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
           cursorsOptions: [{ type: 0, color: OK.blue, alpha: 0.3, follow: false }],
         });
         osmdRef.current = osmd;
-        if (namesShown) {
-          // Leave room under each staff for the note-name pills (one row per note in the biggest chord).
-          const rows = maxChordSize(score);
-          const extra = rows * 1.7 + 0.8;
-          osmd.EngravingRules.MinSkyBottomDistBetweenStaves += extra;
-          osmd.EngravingRules.MinSkyBottomDistBetweenSystems += extra;
-        }
         await osmd.load(score.musicxml ?? exportMusicXml(score));
         if (cancelled) return;
+        if (namesShown) reservePillSpace(osmd, pillBase.current);
         renderFit(osmd);
         buildSteps(osmd);
         setStatus('ready');
@@ -318,24 +374,26 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
           const entry = g.parentVoiceEntry?.parentStaffEntry;
           const measure = entry?.parentMeasure;
           const row = measure?.ParentStaffLine ?? head;
-          // Below the staff, or below the note and its stem when they reach further down.
-          const staffBottom = measure ? svgTop + (measure.PositionAndShape.AbsolutePosition.y + 4) * unit : 0;
+          // Below the staff line's lowest note or stem (the depth OSMD left room under, see
+          // reservePillSpace), or below this note when that is unknown.
+          const base = measure && pillBase.current.get(measure.ParentStaffLine);
+          const staffBottom = measure ? svgTop + (measure.PositionAndShape.AbsolutePosition.y + (base ?? 4)) * unit : 0;
           const body = (g as unknown as { getSVGGElement?: () => SVGGElement | null }).getSVGGElement?.()?.getBoundingClientRect();
-          const below = Math.max(staffBottom, (body && body.height ? body.bottom : r.bottom) - hostRect.top);
+          const below = base ? staffBottom : Math.max(staffBottom, (body && body.height ? body.bottom : r.bottom) - hostRect.top);
           rows.set(row, Math.max(rows.get(row) ?? 0, below));
           const key = entry ?? head;
           const chord = chords.get(key) ?? { x: r.left - hostRect.left + r.width / 2, row, labels: [] };
           chord.labels.push({ midi: n.midi, left: n.hand === 'L', name: midiToName(n.midi, flats, false) });
           chords.set(key, chord);
         }
-        const H = 15;
+        const H = PILL_H;
         const names: string[] = [];
         for (const chord of chords.values()) {
-          const top = (rows.get(chord.row) ?? 0) + 6;
+          const top = (rows.get(chord.row) ?? 0) + PILL_TOP;
           chord.labels.sort((a, b) => b.midi - a.midi);
           chord.labels.forEach((l, i) => {
             const w = Math.max(H, 7 * l.name.length + 8);
-            const y = top + i * (H + 2);
+            const y = top + i * (H + PILL_GAP);
             names.push(
               `<rect x="${chord.x - w / 2}" y="${y}" width="${w}" height="${H}" rx="${H / 2}" fill="${l.left ? OK.purpleSoft : OK.blue}"/>` +
                 `<text x="${chord.x}" y="${y + H / 2}" dy="0.35em" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500" fill="${l.left ? OK.ink : OK.white}">${l.name}</text>`,
