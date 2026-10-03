@@ -90,8 +90,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
         }
         await osmd.load(score.musicxml ?? exportMusicXml(score));
         if (cancelled) return;
-        osmd.zoom = zoom;
-        osmd.render();
+        renderFit(osmd);
         buildSteps(osmd);
         setStatus('ready');
         setRenderGen((g) => g + 1);
@@ -108,6 +107,22 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [score, showFingering, namesShown]);
+
+  /**
+   * Engraves at the requested zoom, then shrinks it if a bar is still too wide for the view, so the
+   * sheet always fits the screen's width and never scrolls sideways.
+   */
+  const renderFit = (osmd: OSMDType) => {
+    osmd.zoom = zoom;
+    osmd.render();
+    for (let i = 0; i < 3; i++) {
+      const avail = wrapRef.current?.clientWidth ?? 0;
+      const drawn = hostRef.current?.querySelector('svg')?.getBoundingClientRect().width ?? 0;
+      if (!avail || drawn <= avail + 0.5) return;
+      osmd.zoom = Math.max(0.3, osmd.zoom * (avail / drawn) * 0.98);
+      osmd.render();
+    }
+  };
 
   const buildSteps = (osmd: OSMDType) => {
     const cursor = osmd.cursor as Cursor;
@@ -142,13 +157,13 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
     let w = el.clientWidth;
     let timer: number | undefined;
     const ro = new ResizeObserver(() => {
-      if (Math.abs(el.clientWidth - w) < 30) return;
+      if (el.clientWidth === w) return;
       w = el.clientWidth;
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         const osmd = osmdRef.current;
         if (!osmd || status !== 'ready') return;
-        osmd.render();
+        renderFit(osmd);
         buildSteps(osmd);
         setRenderGen((g) => g + 1);
       }, 250);
@@ -163,9 +178,8 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
 
   useEffect(() => {
     const osmd = osmdRef.current;
-    if (!osmd || status !== 'ready' || Math.abs(osmd.zoom - zoom) < 0.01) return;
-    osmd.zoom = zoom;
-    osmd.render();
+    if (!osmd || status !== 'ready') return;
+    renderFit(osmd);
     buildSteps(osmd);
     setRenderGen((g) => g + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps

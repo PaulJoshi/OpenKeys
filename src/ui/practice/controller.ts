@@ -126,7 +126,6 @@ class PracticeController {
       playNow: (notes) => engine.player.playNow(notes),
     });
     this.session = session;
-    runtime.judgeHighlights = opts.mode !== 'listen';
     const tm = new TempoMap(score.tempoMap, config.tempoFactor);
     practiceLive.secPerBeat = tm.secPerBeatAt(0);
     practiceLive.getBeat = () => session.viewBeat(engine.now());
@@ -302,7 +301,6 @@ class PracticeController {
     this.unsubs = [];
     const s = this.session;
     this.session = null;
-    runtime.judgeHighlights = false;
     practiceLive.running = false;
     liveKeys.setUpcoming(new Map());
     if (s) {

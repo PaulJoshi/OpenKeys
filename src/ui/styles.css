@@ -677,7 +677,12 @@ input[type='range'],
   font-size: var(--type-caption-sm-size);
   font-weight: var(--weight-medium);
   padding-bottom: 10px;
-  transition: background-color var(--duration-fast) var(--ease-standard);
+  transform-origin: top center;
+  /* Releasing eases back a little slower than pressing. */
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard),
+    transform var(--duration-base) var(--ease-standard);
 }
 
 .key.white {
@@ -719,12 +724,23 @@ input[type='range'],
   background: var(--hand-l);
   color: var(--ok-ink);
 }
+/*
+ * Pressed (MIDI, computer keys, on-screen): a clear neutral fill so it never reads as a verdict,
+ * and the key dips a hair into the bed. Hit/wrong then recolour the held key green/red.
+ */
+.key.down,
+.key.hit,
+.key.wrong {
+  transform: scaleY(0.98);
+  transition-duration: var(--duration-fast);
+}
 .key.white.down {
-  background: var(--ok-soft-cloud);
-  color: var(--ok-mute);
+  background: var(--ok-stone);
+  color: var(--ok-ink);
 }
 .key.black.down {
-  background: var(--ok-charcoal);
+  background: var(--ok-mute);
+  color: var(--ok-white);
 }
 .key.hit {
   background: var(--ok-green);
@@ -748,6 +764,8 @@ input[type='range'],
 .practice {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  /* One column no wider than the screen, so the sheet and keyboard always fit it. */
+  grid-template-columns: minmax(0, 1fr);
   height: 100%;
   min-height: 0;
 }
@@ -926,13 +944,23 @@ input[type='range'],
   }
 }
 
-/* Sheet music always sits on white paper. */
+/*
+ * Sheet music always sits on white paper. It is engraved to the view's width (never scrolls
+ * sideways) and scrolls vertically without a scrollbar: the cursor keeps it in place, and wheel
+ * and touch scrolling still work. A hidden scrollbar also keeps the width steady while engraving.
+ */
 .sheet-wrap {
   flex: 1 1 50%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
   background: var(--ok-white);
   position: relative;
   min-height: 120px;
+}
+
+.sheet-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .sheet-wrap.dark-invert .osmd-host svg {
