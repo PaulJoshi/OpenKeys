@@ -11,6 +11,11 @@ class LiveKeys {
   pressed = new Map<number, KeyMark>();
   /** Upcoming keys to play (outlined), with hand. */
   upcoming = new Map<number, Hand>();
+  /**
+   * Keys the app is playing in listen mode: midi -> the notes holding it down (token -> hand,
+   * or null for the neutral pressed look).
+   */
+  playing = new Map<number, Map<number, Hand | null>>();
   private listeners = new Set<() => void>();
   private scheduled = false;
   private flashTimers = new Map<number, number>();
@@ -68,6 +73,36 @@ class LiveKeys {
     );
   }
 
+  /** Listen mode: a note the app plays holds its key down (tokens keep overlapping notes apart). */
+  playOn(midi: number, token: number, hand: Hand | null = null) {
+    const held = this.playing.get(midi);
+    if (held) held.set(token, hand);
+    else this.playing.set(midi, new Map([[token, hand]]));
+    this.changed();
+  }
+
+  playOff(midi: number, token: number) {
+    const held = this.playing.get(midi);
+    if (!held?.delete(token)) return;
+    if (!held.size) this.playing.delete(midi);
+    this.changed();
+  }
+
+  /** Hand colour of a key the app is playing (the latest note on it); null = neutral; undefined = not playing. */
+  playingHand(midi: number): Hand | null | undefined {
+    const held = this.playing.get(midi);
+    if (!held) return undefined;
+    let hand: Hand | null = null;
+    for (const h of held.values()) hand = h;
+    return hand;
+  }
+
+  clearPlaying() {
+    if (!this.playing.size) return;
+    this.playing.clear();
+    this.changed();
+  }
+
   setUpcoming(next: Map<number, Hand>) {
     let same = next.size === this.upcoming.size;
     if (same) for (const [k, v] of next) if (this.upcoming.get(k) !== v) same = false;
@@ -78,6 +113,7 @@ class LiveKeys {
 
   clear() {
     this.pressed.clear();
+    this.playing.clear();
     this.upcoming = new Map();
     this.changed();
   }

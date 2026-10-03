@@ -36,6 +36,9 @@ class PracticeController {
   readonly stateChange = new Emitter<string>();
   private unsubs: (() => void)[] = [];
   private raf = 0;
+  /** Listen-mode key animation timers. */
+  private keyTimers = new Set<number>();
+  private keyToken = 0;
   private score: Score | null = null;
   private idleBeat = 0;
   private opts: TakeOptions | null = null;
@@ -207,6 +210,7 @@ class PracticeController {
         practiceLive.changed();
       }),
     );
+    if (opts.mode === 'listen') this.unsubs.push(engine.player.scheduled.on((n) => this.animateKey(n.midi, n.hand, n.time, n.upTime)));
     session.start();
     practiceLive.running = true;
     this.stateChange.emit(session.state);
@@ -219,6 +223,30 @@ class PracticeController {
       liveKeys.setUpcoming(up);
     };
     if (opts.mode !== 'listen') this.raf = requestAnimationFrame(loop);
+  }
+
+  /** Listen mode: presses the on-screen key when the note is heard and lifts it when it ends. */
+  private animateKey(midi: number, hand: Hand, time: number, upTime: number) {
+    const engine = runtime.engine;
+    if (!engine || !getSettings().listenKeyAnimation) return;
+    const token = ++this.keyToken;
+    const now = performance.now();
+    const down = Math.max(0, engine.audioToPerf(time) - now);
+    // Lift a little early so a repeated note visibly strikes again.
+    const len = (upTime - time) * 1000;
+    const up = down + Math.max(40, len - Math.min(60, len * 0.25));
+    const at = (ms: number, fn: () => void) => {
+      const id = window.setTimeout(() => {
+        this.keyTimers.delete(id);
+        fn();
+      }, ms);
+      this.keyTimers.add(id);
+    };
+    at(down, () => {
+      const s = getSettings();
+      if (s.listenKeyAnimation) liveKeys.playOn(midi, token, s.listenHandColours ? hand : null);
+    });
+    at(up, () => liveKeys.playOff(midi, token));
   }
 
   private onFeedback(fb: FollowerFeedback, score: Score) {
@@ -297,6 +325,9 @@ class PracticeController {
   private cleanup() {
     this.detector = null;
     cancelAnimationFrame(this.raf);
+    for (const id of this.keyTimers) window.clearTimeout(id);
+    this.keyTimers.clear();
+    liveKeys.clearPlaying();
     for (const u of this.unsubs) u();
     this.unsubs = [];
     const s = this.session;

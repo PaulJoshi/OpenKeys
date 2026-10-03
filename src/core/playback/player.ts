@@ -1,9 +1,10 @@
-import type { HandSelection, Score, ScoreNote } from '../types';
+import type { Hand, HandSelection, Score, ScoreNote } from '../types';
 import { TempoMap, metronomeBeats, scoreEndBeat, timeSignatureAt, measureLengthBeats } from '../score/tempo';
 import { Emitter } from '../emitter';
 import { Timeline } from './timeline';
 import type { ClickSink, NoteSink, ScheduledAudioLog } from './sink';
 import { soundingEndBeat } from './pedal';
+import { tiedLengthBeats } from '../score/events';
 
 export interface PlayerConfig {
   /** 0.25 - 1.5 */
@@ -49,6 +50,11 @@ export class Player {
   readonly ended = new Emitter<void>();
   /** Visual metronome pulse (fires at schedule time with the click's context time). */
   readonly pulse = new Emitter<{ time: number; accent: boolean; sub: boolean; countIn: boolean }>();
+  /**
+   * Each score note as it is scheduled: context times of the key going down and coming back up
+   * (the written length including ties, not the pedalled sound). Drives the listen-mode keys.
+   */
+  readonly scheduled = new Emitter<{ midi: number; hand: Hand; time: number; upTime: number }>();
 
   state: PlayerState = 'stopped';
   config: PlayerConfig = { ...DEFAULT_PLAYER_CONFIG };
@@ -208,6 +214,10 @@ export class Player {
         const vel = n.velocity ?? this.config.defaultVelocity;
         this.sink.play(n.midi, vel, t, dur);
         this.log?.addNote(n.midi, t, t + dur);
+        if (this.scheduled.size) {
+          const upBeat = Math.min(this.segEnd, n.startBeat + tiedLengthBeats(this.score.notes, n));
+          this.scheduled.emit({ midi: n.midi, hand: n.hand, time: t, upTime: Math.max(t + 0.05, this.segTime(upBeat)) });
+        }
       }
       // Clicks.
       while (this.clickIdx < this.clicks.length && this.clicks[this.clickIdx].beat < horizonBeat) {

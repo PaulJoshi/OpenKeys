@@ -201,6 +201,8 @@ class Runtime {
         if (!isInput) return;
         useApp.getState().toast(connected ? `${name} connected` : `${name} disconnected; plug it back in to continue`, connected ? 'good' : 'warn');
       });
+      // Keyboard plugged in or out: route playback to it, or back to the app piano.
+      midi.ports.on(() => this.applyMidiOut());
       midi.deviceChanged.on((name) => {
         meter.set({ ...meter.value, source: 'midi', deviceName: name, active: !!name });
         if (name && name !== getSettings().midiInputName) useApp.getState().updateSettings({ midiInputName: name });
@@ -212,6 +214,15 @@ class Runtime {
     this.midiStatus.emit(this.midi.status);
     await this.reloadCalibration();
     return this.midi;
+  }
+
+  /** Switches the judged input; the meter shows the new source straight away. */
+  setSource(source: InputSource): void {
+    if (source !== 'mic') this.stopMic();
+    useApp.getState().updateSettings({ inputSource: source });
+    const device = source === 'midi' ? (this.midi?.current?.name ?? null) : null;
+    meter.set({ ...meter.value, source, deviceName: device, active: source === 'midi' && !!device, noteName: null, cents: null, confidence: 0, lastVelocity: null, levelDb: -100 });
+    void this.reloadCalibration();
   }
 
   /** Routes scheduled playback to the keyboard over MIDI out when enabled. */

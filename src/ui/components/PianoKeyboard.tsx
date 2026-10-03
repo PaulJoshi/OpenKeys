@@ -60,14 +60,18 @@ export function PianoKeyboard({ low, high, height = 120, labels = 'c', keyHintsB
   useEffect(() => {
     const apply = () => {
       for (const [midi, el] of els.current) {
-        const mark = liveKeys.pressed.get(midi);
+        // Keys the app plays (listen mode) look pressed, in their hand's colour when it has one.
+        const played = liveKeys.pressed.has(midi) ? undefined : liveKeys.playingHand(midi);
+        const mark = liveKeys.pressed.get(midi) ?? (played === null ? 'down' : undefined);
         const up = liveKeys.upcoming.get(midi);
         el.classList.toggle('down', mark === 'down');
         el.classList.toggle('hit', mark === 'hit');
         el.classList.toggle('wrong', mark === 'wrong');
         el.classList.toggle('up-R', up === 'R' || up === 'unknown');
         el.classList.toggle('up-L', up === 'L');
-        el.setAttribute('aria-pressed', mark ? 'true' : 'false');
+        el.classList.toggle('play-R', played === 'R' || played === 'unknown');
+        el.classList.toggle('play-L', played === 'L');
+        el.setAttribute('aria-pressed', mark || played ? 'true' : 'false');
       }
     };
     apply();
