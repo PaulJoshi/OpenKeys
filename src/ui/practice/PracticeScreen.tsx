@@ -275,17 +275,20 @@ function Practice({ score }: { score: Score }) {
   return (
     <div className="practice">
       <div className="toolbar" role="toolbar" aria-label="Practice controls">
-        <button className={`btn big ${running ? '' : 'primary'}`} onClick={toggle} aria-keyshortcuts="Space" style={{ minWidth: 120 }}>
-          {running ? <><Icon name="square" size={18} /> Stop</> : <><Icon name="play" size={18} /> Start</>}
+        <button className="icon-btn soft nav-handle" onClick={() => useApp.getState().set({ navOpen: true })} aria-label="Show menu" title="Show menu">
+          <Icon name="menu" size={18} />
         </button>
-        <div className="seg" role="radiogroup" aria-label="Mode">
+        <button className={`btn small start${running ? '' : ' primary'}`} onClick={toggle} aria-keyshortcuts="Space">
+          {running ? <><Icon name="square" size={16} /> Stop</> : <><Icon name="play" size={16} /> Start</>}
+        </button>
+        <div className="seg group" role="radiogroup" aria-label="Mode">
           {MODES.map((m) => (
             <button key={m.id} aria-pressed={mode === m.id} disabled={running} onClick={() => setMode(m.id)} title={m.hint}>
               {m.label}
             </button>
           ))}
         </div>
-        <div className="seg" aria-label="Hands">
+        <div className="seg group" role="group" aria-label="Hands">
           {(['L', 'R', 'both'] as const).map((h) => (
             <button
               key={h}
@@ -298,30 +301,37 @@ function Practice({ score }: { score: Score }) {
             </button>
           ))}
         </div>
- <label className="row" style={{ gap: 6 }} title="Tempo (+/−)">
-          {!compact && <span className="small muted">Tempo</span>}
-          <input type="range" style={compact ? { width: 90 } : undefined} min={25} max={150} step={5} value={Math.round(tempo * 100)} disabled={running} onChange={(e) => setTempo(Number(e.target.value) / 100)} aria-label="Tempo percent" />
-          <b style={{ minWidth: 48 }}>{Math.round((rampTempo ?? tempo) * 100)}%</b>
-        </label>
-        <button className={`btn small ${settings.metronome ? 'active' : ''}`} onClick={() => update({ metronome: !settings.metronome })} disabled={running} aria-pressed={settings.metronome}>
-          Metronome
-        </button>
-        <div ref={pulseRef} className="pulse-dot" aria-hidden="true" title="Beat" />
-        {range ? (
+        <div className="group tempo" role="group" aria-label="Tempo and metronome">
+          <label title="Tempo (+/−)">
+            <span className="sr-only">Tempo</span>
+            <input type="range" min={25} max={150} step={5} value={Math.round(tempo * 100)} disabled={running} onChange={(e) => setTempo(Number(e.target.value) / 100)} aria-label="Tempo percent" />
+            <span className="tempo-value">{Math.round((rampTempo ?? tempo) * 100)}%</span>
+          </label>
+          <button
+            className="metronome"
+            onClick={() => update({ metronome: !settings.metronome })}
+            disabled={running}
+            aria-pressed={settings.metronome}
+            aria-label="Metronome"
+            title="Metronome"
+          >
+            <Icon name="timer" size={16} />
+          </button>
+          <div ref={pulseRef} className="pulse-dot" aria-hidden="true" title="Beat" />
+        </div>
+        {range && (
           <span className="pill">
             Loop bars {measureNo(range.startMeasure)}–{measureNo(range.endMeasure)}
             <button className="btn ghost small" onClick={clearLoop} disabled={running} aria-label="Clear loop">
               <Icon name="x" size={14} />
             </button>
           </span>
-        ) : (
-          !compact && <span className="small muted">Drag across bars to loop · <kbd>Shift</kbd>+<kbd>L</kbd></span>
         )}
         <div className="grow" />
-        <button className="btn small ghost" onClick={() => setHelp(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
+        <button className="icon-btn shortcuts" onClick={() => setHelp(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
           <Icon name="keyboard" size={18} />
         </button>
-        <div className="seg" aria-label="View">
+        <div className="seg group" role="group" aria-label="View">
           {(['sheet', 'both', 'falling'] as const).map((v) => (
             <button key={v} aria-pressed={settings.view === v} onClick={() => update({ view: v })}>
               {v === 'sheet' ? 'Sheet' : v === 'falling' ? 'Notes' : 'Both'}
@@ -367,7 +377,7 @@ function Practice({ score }: { score: Score }) {
         <div className="row" style={{ marginBottom: compact ? 2 : 8 }}>
           {!compact && <InputMeter />}
           <div className="grow feedback-line" aria-live="polite">
-            {line || (running ? '' : modeHint)}
+            {line || (running ? '' : range ? modeHint : `${modeHint} Drag across bars to loop.`)}
           </div>
           {streak >= 3 && <span className="streak" title="Hit streak">
               <Icon name="flame" size={18} /> {streak}

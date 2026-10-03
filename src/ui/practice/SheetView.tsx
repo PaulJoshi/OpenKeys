@@ -27,6 +27,16 @@ interface StepInfo extends OsmdStep {
 
 const EPS = 1e-4;
 
+/** Most notes struck together by one hand (how many name pills can stack under a staff). */
+function maxChordSize(score: Score): number {
+  const counts = new Map<string, number>();
+  for (const n of score.notes) {
+    const k = `${n.hand === 'L' ? 'L' : 'R'}${n.startBeat.toFixed(3)}`;
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  return Math.max(1, ...counts.values());
+}
+
 /**
  * Sheet music view (OpenSheetMusicDisplay / VexFlow). The cursor follows the current score
  * event, the page auto-scrolls a line ahead, played notes are coloured in place (plus an icon
@@ -46,6 +56,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
   const [error, setError] = useState('');
   const [renderGen, setRenderGen] = useState(0);
   const dragStart = useRef<number | null>(null);
+  const namesShown = noteNameOpacity > 0.02;
 
   // Load + render.
   useEffect(() => {
@@ -70,6 +81,13 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
           cursorsOptions: [{ type: 0, color: OK.blue, alpha: 0.3, follow: false }],
         });
         osmdRef.current = osmd;
+        if (namesShown) {
+          // Leave room under each staff for the note-name pills (one row per note in the biggest chord).
+          const rows = maxChordSize(score);
+          const extra = rows * 1.7 + 0.8;
+          osmd.EngravingRules.MinSkyBottomDistBetweenStaves += extra;
+          osmd.EngravingRules.MinSkyBottomDistBetweenSystems += extra;
+        }
         await osmd.load(score.musicxml ?? exportMusicXml(score));
         if (cancelled) return;
         osmd.zoom = zoom;
@@ -89,7 +107,7 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [score, showFingering]);
+  }, [score, showFingering, namesShown]);
 
   const buildSteps = (osmd: OSMDType) => {
     const cursor = osmd.cursor as Cursor;
@@ -262,21 +280,55 @@ export function SheetView({ score, showFingering, noteNameOpacity, dark, zoom = 
       parts.push(`<ellipse cx="${x}" cy="${y}" rx="${r.width / 2}" ry="${r.height / 2.3}" fill="none" stroke="${col}" stroke-width="2" opacity="0.85" transform="rotate(-20 ${x} ${y})"/>`);
       parts.push(`<text x="${x + r.width}" y="${y + 4}" font-size="11" font-weight="500" fill="${col}">${midiToName(w.midi, flats, false)}</text>`);
     }
-    // Beginner note names under noteheads.
-    if (noteNameOpacity > 0.02) {
-      const seen = new Set<Element>();
-      for (const n of score.notes) {
-        const g = findGNote(n.id, n.midi);
-        const head = (g as unknown as { getNoteheadSVGs?: () => HTMLElement[] } | null)?.getNoteheadSVGs?.()[0];
-        if (!head || seen.has(head)) continue;
-        seen.add(head);
-        const r = head.getBoundingClientRect();
-        if (!r.width) continue;
-        const x = r.left - hostRect.left + r.width / 2;
-        const y = r.bottom - hostRect.top + 11;
-        parts.push(
-          `<text x="${x}" y="${y}" text-anchor="middle" font-size="10" font-weight="500" fill="${dark ? OK.stone : OK.blue}" opacity="${noteNameOpacity}">${midiToName(n.midi, flats, false)}</text>`,
-        );
+    // Beginner note names: a row of hand-coloured pills under each staff line (blue = right hand,
+    // soft purple = left, as on the keyboard and falling notes), so they never read as part of the
+    // black engraving. Chords stack top to bottom in pitch order.
+    if (namesShown) {
+      const sheetSvg = host.querySelector('.osmd-host svg');
+      const osmdNow = osmdRef.current;
+      if (sheetSvg && osmdNow) {
+        const svgTop = sheetSvg.getBoundingClientRect().top - hostRect.top;
+        const unit = 10 * osmdNow.zoom;
+        type Label = { midi: number; left: boolean; name: string };
+        const rows = new Map<unknown, number>();
+        const chords = new Map<unknown, { x: number; row: unknown; labels: Label[] }>();
+        // Keyed by graphical note: chord notes share one notehead group, repeats share one note.
+        const seen = new Set<GraphicalNote>();
+        for (const n of score.notes) {
+          const g = findGNote(n.id, n.midi);
+          const head = (g as unknown as { getNoteheadSVGs?: () => HTMLElement[] } | null)?.getNoteheadSVGs?.()[0];
+          if (!g || !head || seen.has(g)) continue;
+          seen.add(g);
+          const r = head.getBoundingClientRect();
+          if (!r.width) continue;
+          const entry = g.parentVoiceEntry?.parentStaffEntry;
+          const measure = entry?.parentMeasure;
+          const row = measure?.ParentStaffLine ?? head;
+          // Below the staff, or below the note and its stem when they reach further down.
+          const staffBottom = measure ? svgTop + (measure.PositionAndShape.AbsolutePosition.y + 4) * unit : 0;
+          const body = (g as unknown as { getSVGGElement?: () => SVGGElement | null }).getSVGGElement?.()?.getBoundingClientRect();
+          const below = Math.max(staffBottom, (body && body.height ? body.bottom : r.bottom) - hostRect.top);
+          rows.set(row, Math.max(rows.get(row) ?? 0, below));
+          const key = entry ?? head;
+          const chord = chords.get(key) ?? { x: r.left - hostRect.left + r.width / 2, row, labels: [] };
+          chord.labels.push({ midi: n.midi, left: n.hand === 'L', name: midiToName(n.midi, flats, false) });
+          chords.set(key, chord);
+        }
+        const H = 15;
+        const names: string[] = [];
+        for (const chord of chords.values()) {
+          const top = (rows.get(chord.row) ?? 0) + 6;
+          chord.labels.sort((a, b) => b.midi - a.midi);
+          chord.labels.forEach((l, i) => {
+            const w = Math.max(H, 7 * l.name.length + 8);
+            const y = top + i * (H + 2);
+            names.push(
+              `<rect x="${chord.x - w / 2}" y="${y}" width="${w}" height="${H}" rx="${H / 2}" fill="${l.left ? OK.purpleSoft : OK.blue}"/>` +
+                `<text x="${chord.x}" y="${y + H / 2}" dy="0.35em" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500" fill="${l.left ? OK.ink : OK.white}">${l.name}</text>`,
+            );
+          });
+        }
+        parts.push(`<g opacity="${noteNameOpacity}">${names.join('')}</g>`);
       }
     }
     // Loop range highlight.
