@@ -40,6 +40,8 @@ export interface Settings {
   /** In mic mode, allow app audio through the speakers anyway (default muted). */
   micAllowSpeakerPlayback: boolean;
   errorSound: boolean;
+  /** Listen mode: the on-screen keys go down and up with the notes the app plays. */
+  listenKeyAnimation: boolean;
   splitPoint: number;
   detector: DetectorParams;
   debug: boolean;
@@ -76,6 +78,7 @@ export const DEFAULT_SETTINGS: Settings = {
   accompaniment: true,
   micAllowSpeakerPlayback: false,
   errorSound: false,
+  listenKeyAnimation: true,
   splitPoint: 60,
   detector: DEFAULT_DETECTOR_PARAMS,
   debug: false,

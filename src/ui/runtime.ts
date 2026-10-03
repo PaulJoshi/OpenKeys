@@ -201,6 +201,8 @@ class Runtime {
         if (!isInput) return;
         useApp.getState().toast(connected ? `${name} connected` : `${name} disconnected; plug it back in to continue`, connected ? 'good' : 'warn');
       });
+      // Keyboard plugged in or out: route playback to it, or back to the app piano.
+      midi.ports.on(() => this.applyMidiOut());
       midi.deviceChanged.on((name) => {
         meter.set({ ...meter.value, source: 'midi', deviceName: name, active: !!name });
         if (name && name !== getSettings().midiInputName) useApp.getState().updateSettings({ midiInputName: name });

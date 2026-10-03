@@ -93,6 +93,29 @@ describe('Player', () => {
     p.stop();
   });
 
+  it('reports key down and up times for each scheduled note (ties held, pedal ignored)', () => {
+    const { p, advance } = setup();
+    const score = makeScore();
+    score.notes.push({ id: 'e', midi: 64, startBeat: 8, durationBeats: 2, measure: 1, hand: 'R', tiedFromPrevious: true });
+    score.measures.push({ index: 2, startBeat: 8, lengthBeats: 4 });
+    score.pedal = [
+      { beat: 0, down: true },
+      { beat: 4, down: false },
+    ];
+    p.setScore(score);
+    p.configure({ countInBars: 0, tempoFactor: 1 });
+    const keys: { midi: number; time: number; upTime: number }[] = [];
+    p.scheduled.on((k) => keys.push(k));
+    const start = p.start(0);
+    advance(start + 7);
+    const c = keys.find((k) => k.midi === 60)!;
+    expect(c.time).toBeCloseTo(start);
+    expect(c.upTime).toBeCloseTo(start + 0.5); // one beat at 120 bpm, not held to the pedal lift
+    const e = keys.find((k) => k.midi === 64)!;
+    expect(e.upTime - e.time).toBeCloseTo(3); // 4 beats tied into 2 more
+    expect(keys.filter((k) => k.midi === 64)).toHaveLength(1);
+  });
+
   it('logs clicks for mic gating', () => {
     const { p, log, advance } = setup();
     p.configure({ metronome: true, countInBars: 0 });

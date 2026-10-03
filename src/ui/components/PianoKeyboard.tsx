@@ -60,7 +60,7 @@ export function PianoKeyboard({ low, high, height = 120, labels = 'c', keyHintsB
   useEffect(() => {
     const apply = () => {
       for (const [midi, el] of els.current) {
-        const mark = liveKeys.pressed.get(midi);
+        const mark = liveKeys.pressed.get(midi) ?? (liveKeys.playing.has(midi) ? 'down' : undefined);
         const up = liveKeys.upcoming.get(midi);
         el.classList.toggle('down', mark === 'down');
         el.classList.toggle('hit', mark === 'hit');

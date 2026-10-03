@@ -21,6 +21,7 @@ import { TakeReplay } from './TakeReplay';
 import { ShortcutsHelp } from '../components/ShortcutsHelp';
 import { kvSet } from '../../core/progress/db';
 import { Icon } from '../components/Icon';
+import { ListenOptions } from './ListenOptions';
 
 const MODES: { id: PracticeMode; label: string; hint: string }[] = [
   { id: 'listen', label: 'Listen', hint: 'Hear the piece; the cursor follows.' },
@@ -382,6 +383,7 @@ function Practice({ score }: { score: Score }) {
           {streak >= 3 && <span className="streak" title="Hit streak">
               <Icon name="flame" size={18} /> {streak}
             </span>}
+          {mode === 'listen' && <ListenOptions />}
           <span className="small muted">
             {score.title}
             {score.variant ? ` · ${score.variant}` : ''}
