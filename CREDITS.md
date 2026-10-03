@@ -43,5 +43,9 @@
 ## Music
 
 The built-in songs are public-domain compositions (Beethoven, Bach, Petzold, Satie, Pachelbel, Pierpont and
-traditional melodies) **arranged by the OpenKeys project** and released under CC0. No files from score-sharing
-sites are bundled.
+traditional melodies) **arranged by the OpenKeys project** and released under CC0, with one exception:
+
+- **Für Elise, full version** (`src/core/content/scores/fur-elise-full.musicxml`): fingered arrangement by
+  Verona ([pianolessenassen.nl/bladmuziek](https://pianolessenassen.nl/bladmuziek)), published on
+  [MuseScore](https://musescore.com/user/2423821/scores/6647035). Added by the maintainer as free to use; the file
+  is bundled unchanged and is not covered by the CC0 dedication above.
