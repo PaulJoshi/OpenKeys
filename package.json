@@ -2,7 +2,7 @@
   "name": "openkeys",
   "private": true,
   "version": "0.1.0",
-  "description": "Open-source, browser-based piano learning app: play, listen, judge, teach.",
+  "description": "Free, open-source piano teacher in the browser: listens through your mic or MIDI keyboard. A free alternative to Yousician, Synthesia, Simply Piano and flowkey.",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "predev": "node scripts/copy-samples.mjs",
     "dev": "vite",
     "prebuild": "node scripts/copy-samples.mjs",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/build-site.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",

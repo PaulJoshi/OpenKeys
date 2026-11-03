@@ -4,6 +4,14 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "openkeys-learn.vercel.app" }],
+      "destination": "https://openkeys.live/:path*",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/sw.js",

@@ -1,0 +1,29 @@
+# OpenKeys
+
+> OpenKeys (https://openkeys.live) is a free, open-source piano teacher that runs in the web browser. It listens to you play through the microphone (acoustic piano or keyboard) or a USB MIDI keyboard, waits on the right note, tells you what you played instead, and loops the bars you keep missing. No account, no subscription, no ads. Audio never leaves the device. MIT licensed.
+
+People often look for OpenKeys as a free or open-source alternative to Yousician, Synthesia (falling notes, in the browser), Simply Piano and flowkey, for piano only.
+
+## What it does
+
+- Input: microphone with a 2-minute setup wizard, USB MIDI keyboard (Chrome, Edge, Firefox; Safari is microphone only), or computer keys.
+- Practice modes: Listen, Wait (stops until you play the right notes), Play along at 25-150% tempo, Follow me (follows your tempo), Loop drill (tempo rises 5% after each clean pass). Hands separately or together.
+- Views: sheet music, falling notes, or both, with an on-screen keyboard.
+- Feedback: notes marked right or wrong in place, wrong notes shown as ghost noteheads, results with a bar-by-bar heatmap, top trouble spots with a one-click practice loop, and coaching such as per-hand timing.
+- Learning: a 7-lesson course, generated drills (scales and arpeggios in any key, chord progressions, sight-reading, rhythm, ear training, note reading), daily goal and streak, spaced review of trouble spots.
+- Music: 15 built-in public-domain pieces in graded versions (Ode to Joy, Für Elise, Gymnopédie No. 1, Prelude in C, Minuet in G, Canon in D and more); import MusicXML/MXL, MIDI and ABC; built-in ABC editor.
+- Free play with a live piano roll; record and transcribe to a score or MIDI, locally.
+- Installs as an app and works offline.
+
+## Limits
+
+- Piano and keyboard only.
+- A small built-in library (15 pieces) compared with commercial apps; no licensed pop songs; no video lessons.
+
+## Links
+
+- App: https://openkeys.live/
+- How it works: https://openkeys.live/learn-piano-free/
+- Comparison with Yousician, Synthesia, Simply Piano and flowkey: https://openkeys.live/alternatives/
+- Source code: https://github.com/PaulJoshi/OpenKeys
+- Microphone accuracy measurements: https://github.com/PaulJoshi/OpenKeys/blob/main/docs/ACCURACY.md
