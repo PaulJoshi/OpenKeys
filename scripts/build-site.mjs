@@ -58,7 +58,10 @@ const tiles = () => `<div class="tiles">${FEATURES.map(([h, p]) => `<div class="
 
 const related = (page) => {
   const others = PAGES.filter((p) => p.slug !== page.slug);
-  return `<div class="links">${others.map((p) => `<a href="${href(p.slug)}">${esc(p.h1)}<span>${esc(p.title.split(' · ')[0])}</span></a>`).join('')}</div>`;
+  const sub = (p) => p.title.split(' · ')[0];
+  return `<div class="links">${others
+    .map((p) => `<a href="${href(p.slug)}">${esc(p.h1)}${sub(p) !== p.h1 ? `<span>${esc(sub(p))}</span>` : ''}</a>`)
+    .join('')}</div>`;
 };
 
 function jsonLd(page) {
