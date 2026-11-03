@@ -6,9 +6,9 @@
   "outputDirectory": "dist",
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "openkeys-learn.vercel.app" }],
-      "destination": "https://openkeys.live/:path*",
+      "destination": "https://openkeys.live/$1",
       "permanent": true
     }
   ],
