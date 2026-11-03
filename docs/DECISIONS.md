@@ -124,3 +124,8 @@ frustrating feedback**. This file records those choices and why.
 36. **Note names on the sheet are hand-coloured pills** (blue right hand, soft purple left hand, as on the
     keyboard and falling notes) in a row under each staff, so they never read as part of the black engraving
     (or its inverted dark version). Chords stack in pitch order, and the engraving reserves room for the row.
+37. **Search pages are static HTML next to the app.** The app is a single client-rendered page, so the pages
+    that answer searches ("Yousician alternative", "Synthesia in the browser", "learn piano free") are plain
+    HTML written by `scripts/build-site.mjs` from `site/pages.mjs` after `vite build`, together with
+    `sitemap.xml`. They use the same tokens and fonts, need no JavaScript, and are excluded from the service
+    worker's app fallback. Claims about other apps stay general, dated and honest about what OpenKeys lacks.

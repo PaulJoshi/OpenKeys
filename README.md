@@ -6,6 +6,9 @@ played (notes, timing, held length and dynamics), and teaches with immediate, sp
 
 No account, no server, no tracking: **audio never leaves your device.** It installs as an app and works offline.
 
+**Try it: [openkeys.live](https://openkeys.live)** · a free, open-source alternative to Yousician, Synthesia,
+Simply Piano and flowkey for piano ([how it compares](https://openkeys.live/alternatives/)).
+
 ![OpenKeys practice screen: sheet music with coloured notes, falling notes and the on-screen keyboard](docs/practice.png)
 
 ## What it does

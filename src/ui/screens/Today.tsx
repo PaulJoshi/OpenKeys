@@ -90,6 +90,10 @@ export function Today() {
               <Icon name="keyboard" /> No instrument
             </button>
           </div>
+          <p className="muted small" style={{ marginTop: 'var(--space-lg)' }}>
+            <a href={`${import.meta.env.BASE_URL}learn-piano-free/`}>How OpenKeys works</a> ·{' '}
+            <a href={`${import.meta.env.BASE_URL}alternatives/`}>How it compares with other piano apps</a>
+          </p>
         </section>
       )}
       <div className="grid" style={{ marginBottom: 20 }}>

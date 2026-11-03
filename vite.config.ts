@@ -16,7 +16,8 @@ export default defineConfig({
       manifest: {
         name: 'OpenKeys — piano teacher',
         short_name: 'OpenKeys',
-        description: 'Open-source piano learning in the browser: play, listen, judge, teach.',
+        description: 'A free, open-source piano teacher in your browser. It listens through your microphone or MIDI keyboard.',
+        categories: ['education', 'music'],
         theme_color: '#111111',
         background_color: '#ffffff',
         display: 'standalone',
@@ -35,6 +36,8 @@ export default defineConfig({
         globIgnores: ['samples/**', 'models/**'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: 'index.html',
+        // The static info pages (site/pages.mjs) are written after this build; never answer them with the app.
+        navigateFallbackDenylist: [/^\/(learn-piano-free|alternatives|[a-z-]+-alternative)\/?/],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.includes('/models/'),
